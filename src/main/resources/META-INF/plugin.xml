@@ -1,0 +1,28 @@
+<idea-plugin>
+    <id>org.example.guava-event-bus-idea</id>
+    <name>Guava Event Bus Idea</name>
+    <vendor email="homeanter@163.com" url="https://github.com/homeant">homeant</vendor>
+
+    <description><![CDATA[
+    Enter short description for your plugin here.<br>
+    <em>most HTML tags may be used</em>
+    ]]></description>
+
+    <!-- please see https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html
+         on how to target different products -->
+    <depends>com.intellij.modules.platform</depends>
+    <depends>com.intellij.modules.java</depends>
+
+
+    <extensions defaultExtensionNs="com.intellij">
+        <!-- Add your extensions here -->
+        <codeInsight.lineMarkerProvider language="JAVA"
+                                        implementationClass="io.github.homeant.guava.event.bus.java.JavaLineMarkerProvider"/>
+    </extensions>
+
+    <actions>
+        <!-- Add your actions here -->
+        <action id="guava-event-bus-publisher-action"
+                class="io.github.homeant.guava.event.bus.action.PublisherAction" text="EventPublisherAction"/>
+    </actions>
+</idea-plugin>
