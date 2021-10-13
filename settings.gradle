@@ -1,2 +1,8 @@
-rootProject.name = 'guava-event-bus-idea'
+pluginManagement{
+    repositories {
+        maven { url 'https://oss.sonatype.org/content/repositories/snapshots/'}
+        gradlePluginPortal()
+    }
+}
 
+rootProject.name = 'guava-event-bus-idea'

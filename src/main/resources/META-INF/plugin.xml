@@ -17,12 +17,15 @@
     <extensions defaultExtensionNs="com.intellij">
         <!-- Add your extensions here -->
         <codeInsight.lineMarkerProvider language="JAVA"
-                                        implementationClass="io.github.homeant.guava.event.bus.java.JavaLineMarkerProvider"/>
+                                        implementationClass="io.github.homeant.guava.event.bus.EventBugLineMarkerProvider"/>
     </extensions>
 
     <actions>
         <!-- Add your actions here -->
-        <action id="guava-event-bus-publisher-action"
-                class="io.github.homeant.guava.event.bus.action.PublisherAction" text="EventPublisherAction"/>
+        <group id="Internal.Guave" popup="true" compact="true">
+            <action id="guava-event-bus-publisher-action"
+                    class="io.github.homeant.guava.event.bus.action.PublisherAction" text="Event Publisher"/>
+            <add-to-group group-id="Internal" anchor="last"/>
+        </group>
     </actions>
 </idea-plugin>
