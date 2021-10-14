@@ -1,11 +1,15 @@
 package io.github.homeant.guava.event.bus.utils;
 
 import com.intellij.lang.Language;
+import com.intellij.openapi.project.Project;
 import com.intellij.psi.*;
 import com.intellij.psi.impl.source.tree.java.PsiIdentifierImpl;
 import com.intellij.psi.impl.source.tree.java.PsiMethodCallExpressionImpl;
 import com.intellij.psi.impl.source.tree.java.PsiReferenceExpressionImpl;
+import com.intellij.psi.search.GlobalSearchScope;
 import io.github.homeant.guava.event.bus.constant.Constants;
+
+import java.util.*;
 
 public class PsiUtils {
     private PsiUtils(){
@@ -69,4 +73,75 @@ public class PsiUtils {
         return obj != null && obj.equals(value);
     }
 
+    public static boolean hasAnnotation(PsiElement element, String annotationName) {
+        return findAnnotation(element, annotationName) != null;
+    }
+
+    static PsiAnnotation findAnnotation(PsiElement element, String annotationName) {
+        if (element instanceof PsiModifierListOwner) {
+            PsiModifierListOwner listOwner = (PsiModifierListOwner) element;
+            PsiModifierList modifierList = listOwner.getModifierList();
+
+            if (modifierList != null) {
+                for (PsiAnnotation psiAnnotation : modifierList.getAnnotations()) {
+                    if (annotationName.equals(psiAnnotation.getQualifiedName())) {
+                        return psiAnnotation;
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+
+    public static PsiMethod findMethod(PsiElement element) {
+        if (element == null) {
+            return null;
+        } else if (element instanceof PsiMethod) {
+            return (PsiMethod) element;
+        } else {
+            return findMethod(element.getParent());
+        }
+    }
+
+    public static PsiClass getClass(PsiElement psiElement) {
+        if (psiElement instanceof PsiVariable) {
+            PsiVariable variable = (PsiVariable) psiElement;
+            return getClass(variable.getType());
+        } else if (psiElement instanceof PsiMethod) {
+            return ((PsiMethod) psiElement).getContainingClass();
+        }
+
+        return null;
+    }
+
+    public static PsiClass getClass(PsiType psiType) {
+        if (psiType instanceof PsiClassType) {
+            return ((PsiClassType) psiType).resolve();
+        }
+        return null;
+    }
+
+    public static PsiField findField(PsiElement element) {
+        if (element == null) {
+            return null;
+        } else if (element instanceof PsiField) {
+            return (PsiField) element;
+        } else {
+            return findField(element.getParent());
+        }
+    }
+
+    private static PsiClassType getPsiClassType(PsiElement psiElement) {
+        if (psiElement instanceof PsiVariable) {
+            return (PsiClassType) ((PsiVariable) psiElement).getType();
+        } else if (psiElement instanceof PsiMethod) {
+            return (PsiClassType) ((PsiMethod) psiElement).getReturnType();
+        }
+        return null;
+    }
+    private static PsiClassType extractFirstTypeParameter(PsiClassType psiClassType) {
+        return (PsiClassType) psiClassType.resolveGenerics().getSubstitutor()
+                .getSubstitutionMap().values().iterator().next();
+    }
 }
