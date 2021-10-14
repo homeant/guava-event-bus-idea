@@ -3,6 +3,10 @@ package io.github.homeant.guava.event.bus;
 import com.intellij.codeInsight.daemon.LineMarkerInfo;
 import com.intellij.codeInsight.daemon.LineMarkerProvider;
 import com.intellij.codeInsight.navigation.NavigationGutterIconBuilder;
+import com.intellij.find.FindManager;
+import com.intellij.find.findUsages.FindUsagesHandler;
+import com.intellij.find.findUsages.FindUsagesManager;
+import com.intellij.find.impl.FindManagerImpl;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.editor.markup.GutterIconRenderer;
 import com.intellij.openapi.fileEditor.OpenFileDescriptor;
@@ -30,13 +34,13 @@ public class EventBugLineMarkerProvider implements LineMarkerProvider {
             return gutterIconBuilder(element,Constants.PUBLISHER_ICON)
                     .setPopupTitle(Constants.PUBLISHER)
                     .setTooltipText(Constants.PUBLISHER)
-                    .createLineMarkerInfo(element);
+                    .createLineMarkerInfo(element,this::publishHandle);
         }
         if (PsiUtils.isEventBusHandlerMethod(element)) {
-            return gutterIconBuilder(element,Constants.PUBLISHER_ICON)
+            return gutterIconBuilder(element,Constants.LISTENER_ICON)
                     .setPopupTitle(Constants.LISTENER)
                     .setTooltipText(Constants.LISTENER)
-                    .createLineMarkerInfo(element, this::publishHandle);
+                    .createLineMarkerInfo(element, this::listenHandle);
         }
         return null;
     }
@@ -48,6 +52,10 @@ public class EventBugLineMarkerProvider implements LineMarkerProvider {
     }
 
     private void publishHandle(MouseEvent e, PsiElement elt){
+
+    }
+
+    private void listenHandle(MouseEvent e, PsiElement elt){
         if (elt instanceof PsiMethod) {
             Project project = elt.getProject();
             JavaPsiFacade javaPsiFacade = JavaPsiFacade.getInstance(project);
@@ -60,9 +68,17 @@ public class EventBugLineMarkerProvider implements LineMarkerProvider {
             if (null != postMethod) {
                 PsiParameter parameter = method.getParameterList().getParameter(0);
                 if (parameter != null) {
+                    // 参数
                     PsiClass eventClass = ((PsiClassType) parameter.getType()).resolve();
                     if (eventClass != null) {
-                        Editor editor = PsiEditorUtil.findEditor(elt);
+                        log.info("event class "+ eventClass);
+                        // 查找发布者
+                        // Editor editor = PsiEditorUtil.findEditor(elt);
+                        FindUsagesManager findUsagesManager = ((FindManagerImpl) FindManager.getInstance(project)).getFindUsagesManager();
+                        FindUsagesHandler handler = findUsagesManager.getNewFindUsagesHandler(elt, false);
+                        if(handler==null) return;
+
+
                     }
                 }
             }
