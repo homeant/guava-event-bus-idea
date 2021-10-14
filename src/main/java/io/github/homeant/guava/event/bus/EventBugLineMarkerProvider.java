@@ -27,16 +27,16 @@ public class EventBugLineMarkerProvider implements LineMarkerProvider {
             return NavigationGutterIconBuilder.create(Constants.PUBLISHER_ICON)
                     .setAlignment(GutterIconRenderer.Alignment.LEFT)
                     .setTarget(element)
-                    .setPopupTitle("publisher")
-                    .setTooltipText("publisher")
+                    .setPopupTitle(Constants.PUBLISHER)
+                    .setTooltipText(Constants.PUBLISHER)
                     .createLineMarkerInfo(element);
         }
         if (PsiUtils.isEventBusHandlerMethod(element)) {
             return NavigationGutterIconBuilder.create(Constants.LISTENER_ICON)
                     .setAlignment(GutterIconRenderer.Alignment.LEFT)
                     .setTarget(element)
-                    .setPopupTitle("listener")
-                    .setTooltipText("listener")
+                    .setPopupTitle(Constants.LISTENER)
+                    .setTooltipText(Constants.LISTENER)
                     .createLineMarkerInfo(element, (e, elt) -> {
                         if (elt instanceof PsiMethod) {
                             Project project = elt.getProject();

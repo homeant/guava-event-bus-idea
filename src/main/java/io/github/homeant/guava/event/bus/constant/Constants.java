@@ -5,6 +5,14 @@ import com.intellij.openapi.util.IconLoader;
 import javax.swing.*;
 
 public class Constants {
+
+    private Constants(){
+
+    }
+
+    public static final String PUBLISHER = "publisher";
+    public static final String LISTENER = "listener";
+
     public static final String PUBLISHER_ICON_NAME = "/icons/publisher.png";
     public static final String LISTENER_ICON_NAME = "/icons/listener.png";
     public static final Icon PUBLISHER_ICON = IconLoader.getIcon(Constants.PUBLISHER_ICON_NAME,Constants.class);
