@@ -1,9 +1,16 @@
+
 plugins {
     id 'org.jetbrains.intellij' version '1.2.0'
+    //id 'org.jetbrains.changelog' version '1.2.1'
 }
 
+//apply plugin: "org.jetbrains.changelog"
+
 group 'io.github.homeant'
-version '1.0'
+version '1.0.0'
+
+sourceCompatibility=JavaVersion.VERSION_11
+targetCompatibility=JavaVersion.VERSION_11
 
 repositories {
     mavenLocal()
@@ -22,15 +29,18 @@ dependencies {
     testAnnotationProcessor 'org.projectlombok:lombok:1.18.22'
 }
 
+
+
 // See https://github.com/JetBrains/gradle-intellij-plugin/
 intellij {
     plugins = ['java']
     version = '2021.2.2'
+    type = 'IC'
 }
 patchPluginXml {
     changeNotes = """
-     发布V1.0版本<br>
-      <em>为<code>Guava EventBug</code>提供快速索引和跳转</em>"""
+     Release V1.0<br>
+     provide quick index and jump to the annotations or method of Guava EventBug"""
 }
 test {
     useJUnitPlatform()
