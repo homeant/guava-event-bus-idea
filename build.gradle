@@ -29,12 +29,8 @@ intellij {
 }
 patchPluginXml {
     changeNotes = """
-     发布1.0版本<br>
-      <em>为<code>Guava EventBug</code>提供快速索引和跳转</em>
-      <ul>
-        <li>通过eventBus.post查找对应的实现</li>
-        <li>通过@Subscribe注解查找对应的生产者</li>
-      </ul>"""
+     发布V1.0版本<br>
+      <em>为<code>Guava EventBug</code>提供快速索引和跳转</em>"""
 }
 test {
     useJUnitPlatform()
