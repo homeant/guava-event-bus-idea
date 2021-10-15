@@ -4,8 +4,11 @@
     <vendor email="homeanter@163.com" url="https://github.com/homeant">homeant</vendor>
 
     <description><![CDATA[
-    Enter short description for your plugin here.<br>
-    <em>most HTML tags may be used</em>
+     为Guava EventBus提供快速索引和跳转
+    <ul>
+      <li><code>eventBus.post</code> to <code>@Subscribe</code></li>
+      <li><code>@Subscribe</code> to <code>eventBus.post</code></li>
+    </ul>
     ]]></description>
 
     <!-- please see https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html
