@@ -1,5 +1,5 @@
 <idea-plugin>
-    <id>org.example.guava-event-bus-idea</id>
+    <id>io.github.homeant.guava-event-bus-idea</id>
     <name>Guava Event Bus Idea</name>
     <vendor email="homeanter@163.com" url="https://github.com/homeant">homeant</vendor>
 
