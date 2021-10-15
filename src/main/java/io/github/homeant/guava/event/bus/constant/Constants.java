@@ -21,7 +21,11 @@ public class Constants {
 
     public static final String EVENT_CLASS_NAME = "EventBus";
 
+    public static final String EVENT_ASYNC_CLASS_NAME = "AsyncEventBus";
+
+
     public static final String EVENT_CLASS_ABS_NAME =PACKAGE_NAME+"."+EVENT_CLASS_NAME;
+    public static final String EVENT_ASYNC_CLASS_ABS_NAME =PACKAGE_NAME+"."+EVENT_ASYNC_CLASS_NAME;
 
     public static final String PUBLISHER_FUNC_NAME = "post";
 

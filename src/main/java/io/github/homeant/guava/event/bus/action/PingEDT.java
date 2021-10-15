@@ -33,10 +33,8 @@ class PingEDT {
                 return;
             }
             long start = System.currentTimeMillis();
-            int processed = 0;
             while (true) {
                 if (processNext()) {
-                    processed++;
                 } else {
                     break;
                 }

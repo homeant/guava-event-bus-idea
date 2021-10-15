@@ -22,13 +22,6 @@
 
     <actions>
         <!-- Add your actions here -->
-        <group id="Internal.Guave.EventBus" popup="true" compact="true">
-            <action id="guava-event-bus-publisher-action"
-                    class="io.github.homeant.guava.event.bus.action.PublisherAction" text="Event Publisher"/>
-            <action id="guava-event-bus-show-usage-action"
-                    class="io.github.homeant.guava.event.bus.action.ShowUsagesAction" text="Event Show Action"/>
-            <add-to-group group-id="Internal" anchor="last"/>
-        </group>
 
     </actions>
 </idea-plugin>

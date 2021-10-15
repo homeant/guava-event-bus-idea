@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.likfe.ideaplugin.eventbus3;
+package io.github.homeant.guava.event.bus.action;
 
 import com.intellij.ui.ActiveComponent;
 import org.jetbrains.annotations.NotNull;

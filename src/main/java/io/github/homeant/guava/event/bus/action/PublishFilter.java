@@ -6,7 +6,7 @@ import com.intellij.usages.UsageInfo2UsageAdapter;
 import io.github.homeant.guava.event.bus.utils.PsiUtils;
 
 
-public class ListenFilterJava implements Filter {
+public class PublishFilter implements Filter {
     @Override
     public boolean shouldShow(Usage usage) {
         PsiElement element = ((UsageInfo2UsageAdapter) usage).getElement();
