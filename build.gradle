@@ -43,6 +43,11 @@ patchPluginXml {
      Release V1.0<br>
      provide quick index and jump to the annotations or method of Guava EventBug"""
 }
+
+publishPlugin{
+    token = System.getenv("ORG_GRADLE_PROJECT_intellijPublishToken")
+}
+
 test {
     useJUnitPlatform()
 }
