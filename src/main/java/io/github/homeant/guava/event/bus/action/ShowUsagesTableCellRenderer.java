@@ -22,7 +22,6 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.FlowLayout;
-import java.awt.Insets;
 import javax.swing.Icon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -47,8 +46,8 @@ public class ShowUsagesTableCellRenderer implements TableCellRenderer{
 
         JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
         Color fileBgColor = getBackgroundColor(isSelected, usage);
-        final Color bg = UIUtil.getListSelectionBackground();
-        final Color fg = UIUtil.getListSelectionForeground();
+        final Color bg = UIUtil.getListSelectionBackground(true);
+        final Color fg = UIUtil.getListSelectionBackground(true);
         panel.setBackground(isSelected ? bg : fileBgColor == null ? list.getBackground() : fileBgColor);
         panel.setForeground(isSelected ? fg : list.getForeground());
 
@@ -62,7 +61,7 @@ public class ShowUsagesTableCellRenderer implements TableCellRenderer{
         }
 
         SimpleColoredComponent textChunks = new SimpleColoredComponent();
-        textChunks.setIpad(new Insets(0, 0, 0, 0));
+        textChunks.setIpad(JBUI.emptyInsets());
         textChunks.setBorder(null);
 
         if (column == 0) {
@@ -142,7 +141,7 @@ public class ShowUsagesTableCellRenderer implements TableCellRenderer{
             renderer.setIcon(group.getIcon(true));
             SimpleTextAttributes attributes =
                     deriveAttributesWithColor(SimpleTextAttributes.REGULAR_ATTRIBUTES, fileBgColor);
-            renderer.append(group.getText(myUsageView), attributes);
+            renderer.append(group.getPresentableGroupText(), attributes);
             renderer.append(" ", attributes);
             renderer.setIpad(JBUI.emptyInsets());
             renderer.setBorder(null);
