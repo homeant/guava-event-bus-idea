@@ -286,7 +286,8 @@ public class ShowUsagesAction extends AnAction implements PopupAction{
 
 
         Processor<Usage> collect = new Processor<>() {
-            private final UsageTarget[] myUsageTarget = {new PsiElement2UsageTargetAdapter(handler.getPsiElement(), true)};
+
+            private final UsageTarget[] myUsageTarget = {new PsiElement2UsageTargetAdapter(handler.getPsiElement(), getDefaultOptions(handler))};
 
             @Override
             public boolean process(@NotNull Usage usage) {
@@ -1033,8 +1034,19 @@ public class ShowUsagesAction extends AnAction implements PopupAction{
             return getTable().getSelectedRow();
         }
 
+        /**
+         * idea version 201
+         * @return
+         */
+        protected Object @NotNull [] getAllElements() {
+            return ((MyModel)getTable().getModel()).getItems().toArray();
+        }
 
-        @Override
+        /**
+         * idea version 211
+         * @param viewIndex
+         * @return
+         */
         protected Object getElementAt(int viewIndex) {
             return  ((MyModel)getTable().getModel()).getItems().get(viewIndex);
         }

@@ -16,6 +16,7 @@ import com.intellij.usages.impl.UsageNode;
 import com.intellij.usages.impl.UsageViewImpl;
 import com.intellij.usages.rules.UsageInFile;
 import com.intellij.util.ui.EmptyIcon;
+import com.intellij.util.ui.JBUI;
 import com.intellij.util.ui.UIUtil;
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -114,7 +115,7 @@ public class ShowUsagesTableCellRenderer implements TableCellRenderer{
     private Color getBackgroundColor(boolean isSelected, Usage usage) {
         Color fileBgColor = null;
         if (isSelected) {
-            fileBgColor = UIUtil.getListSelectionBackground();
+            fileBgColor = UIUtil.getListSelectionBackground(true);
         } else {
             VirtualFile virtualFile =
                     usage instanceof UsageInFile ? ((UsageInFile) usage).getFile() : null;
@@ -138,12 +139,12 @@ public class ShowUsagesTableCellRenderer implements TableCellRenderer{
         if (node.canNavigateToSource()) {
             SimpleColoredComponent renderer = new SimpleColoredComponent();
 
-            renderer.setIcon(group.getIcon());
+            renderer.setIcon(group.getIcon(true));
             SimpleTextAttributes attributes =
                     deriveAttributesWithColor(SimpleTextAttributes.REGULAR_ATTRIBUTES, fileBgColor);
             renderer.append(group.getText(myUsageView), attributes);
             renderer.append(" ", attributes);
-            renderer.setIpad(new Insets(0, 0, 0, 0));
+            renderer.setIpad(JBUI.emptyInsets());
             renderer.setBorder(null);
             panel.add(renderer);
         }
