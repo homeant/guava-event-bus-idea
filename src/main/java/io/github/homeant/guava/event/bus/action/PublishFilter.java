@@ -11,14 +11,16 @@ public class PublishFilter implements Filter {
     public boolean shouldShow(Usage usage) {
         PsiElement element = ((UsageInfo2UsageAdapter) usage).getElement();
         if (element instanceof PsiJavaCodeReferenceElement) {
-            if ((element = element.getParent()) instanceof PsiTypeElement) {
-                if ((element = element.getParent()) instanceof PsiParameter) {
-                    if ((element = element.getParent()) instanceof PsiParameterList) {
-                        if ((element = element.getParent()) instanceof PsiMethod) {
+            element = element.getParent();
+            if (element instanceof PsiTypeElement) {
+                element = element.getParent();
+                if (element instanceof PsiParameter) {
+                    element = element.getParent();
+                    if (element instanceof PsiParameterList) {
+                        element = element.getParent();
+                        if (element instanceof PsiMethod) {
                             PsiMethod method = (PsiMethod) element;
-                            if (PsiUtils.isEventBusHandlerMethod(method)) {
-                                return true;
-                            }
+                            return PsiUtils.isEventBusHandlerMethod(method);
                         }
                     }
                 }

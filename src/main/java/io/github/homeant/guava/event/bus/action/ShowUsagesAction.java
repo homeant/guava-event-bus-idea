@@ -583,7 +583,7 @@ public class ShowUsagesAction extends AnAction implements PopupAction{
 
         InplaceButton settingsButton = createSettingsButton(handler, popupPosition, editor, maxUsages, () -> popup[0].cancel());
 
-        ActiveComponent spinningProgress = new ActiveComponent() {
+        builder.setCommandButton(new CompositeActiveComponent(new ActiveComponent(){
             @Override
             public void setActive(boolean active) {
                 // TODO document why this method is empty
@@ -593,18 +593,23 @@ public class ShowUsagesAction extends AnAction implements PopupAction{
             public @NotNull JComponent getComponent() {
                 return processIcon;
             }
-        };
-        builder.setCommandButton(new CompositeActiveComponent(spinningProgress, settingsButton));
+        }, settingsButton));
 
         DefaultActionGroup toolbar = new DefaultActionGroup();
         usageView.addFilteringActions(toolbar);
 
-        toolbar.add(ActionManager.getInstance().getAction("UsageGrouping.FileStructure"));
+        AnAction usageAction = ActionManager.getInstance().getAction("UsageGrouping.FileStructure");
+        if(usageAction!=null){
+            toolbar.add(usageAction);
+        }
+
         toolbar.add(new AnAction("Open Find Usages Toolwindow", "Show all usages in a separate toolwindow", AllIcons.Toolwindows.ToolWindowFind) {
+
             {
                 AnAction action = ActionManager.getInstance().getAction(IdeActions.ACTION_FIND_USAGES);
                 setShortcutSet(action.getShortcutSet());
             }
+
             @Override
             public void actionPerformed(AnActionEvent e) {
                 hideHints();
@@ -626,7 +631,7 @@ public class ShowUsagesAction extends AnAction implements PopupAction{
         JComponent content = popup[0].getContent();
 
         myWidth = (int)(toolBar.getPreferredSize().getWidth()
-                + new JLabel(getFullTitle(usages, title, hadMoreSeparator, visibleNodes.size() - 1, true)).getPreferredSize().getWidth()
+                + new JLabel(getFullTitle(usages, title!=null?title:"", hadMoreSeparator, visibleNodes.size() - 1, true)).getPreferredSize().getWidth()
                 + settingsButton.getPreferredSize().getWidth());
         myWidth = -1;
         for (AnAction action : toolbar.getChildren(null)) {
@@ -750,7 +755,7 @@ public class ShowUsagesAction extends AnAction implements PopupAction{
                                                @NotNull Collection<UsageNode> visibleNodes,
                                                @NotNull UsageViewImpl usageView,
                                                @NotNull UsageViewPresentation presentation) {
-        @NotNull List<UsageNode> data = new ArrayList<UsageNode>();
+        @NotNull List<UsageNode> data = new ArrayList<>();
         int filtered = filtered(usages, usageView);
         if (filtered != 0) {
             data.add(createStringNode(UsageViewBundle.message("usages.were.filtered.out", filtered)));
@@ -760,7 +765,7 @@ public class ShowUsagesAction extends AnAction implements PopupAction{
             String progressText = UsageViewManagerImpl.getProgressTitle(presentation);
             data.add(createStringNode(progressText));
         }
-        Collections.sort(data, USAGE_NODE_COMPARATOR);
+        data.sort(USAGE_NODE_COMPARATOR);
         return data;
     }
 
@@ -949,25 +954,17 @@ public class ShowUsagesAction extends AnAction implements PopupAction{
         if (newEditor == null) return;
         final Project project = handler.getProject();
         //opening editor is performing in invokeLater
-        IdeFocusManager.getInstance(project).doWhenFocusSettlesDown(new Runnable() {
+        IdeFocusManager.getInstance(project).doWhenFocusSettlesDown(() -> newEditor.getScrollingModel().runActionOnScrollingFinished(new Runnable() {
             @Override
             public void run() {
-                newEditor.getScrollingModel().runActionOnScrollingFinished(new Runnable() {
-                    @Override
-                    public void run() {
-                        // after new editor created, some editor resizing events are still bubbling. To prevent hiding hint, invokeLater this
-                        IdeFocusManager.getInstance(project).doWhenFocusSettlesDown(new Runnable() {
-                            @Override
-                            public void run() {
-                                if (newEditor.getComponent().isShowing()) {
-                                    showHint(hint, newEditor, popupPosition, handler, maxUsages, options);
-                                }
-                            }
-                        });
+                // after new editor created, some editor resizing events are still bubbling. To prevent hiding hint, invokeLater this
+                IdeFocusManager.getInstance(project).doWhenFocusSettlesDown(() -> {
+                    if (newEditor.getComponent().isShowing()) {
+                        showHint(hint, newEditor, popupPosition, handler, maxUsages, options);
                     }
                 });
             }
-        });
+        }));
     }
 
     @Nullable
@@ -1070,7 +1067,7 @@ public class ShowUsagesAction extends AnAction implements PopupAction{
         @Override
         protected void selectElement(Object element, String selectedText) {
             List<UsageNode> data = ((MyModel)getTable().getModel()).getItems();
-            int i = data.indexOf(element);
+            int i = data.indexOf((UsageNode)element);
             if (i == -1) return;
             final int viewRow = getTable().convertRowIndexToView(i);
             getTable().getSelectionModel().setSelectionInterval(viewRow, viewRow);

@@ -141,7 +141,7 @@ public class ShowUsagesTableCellRenderer implements TableCellRenderer{
             renderer.setIcon(group.getIcon(true));
             SimpleTextAttributes attributes =
                     deriveAttributesWithColor(SimpleTextAttributes.REGULAR_ATTRIBUTES, fileBgColor);
-            renderer.append(group.getPresentableGroupText(), attributes);
+            renderer.append(group.getText(myUsageView), attributes);
             renderer.append(" ", attributes);
             renderer.setIpad(JBUI.emptyInsets());
             renderer.setBorder(null);
