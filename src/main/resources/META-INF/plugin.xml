@@ -3,7 +3,7 @@
     <name>Guava Event Bus Idea</name>
     <vendor email="homeanter@163.com" url="https://github.com/homeant">homeant</vendor>
 
-    <idea-version since-build="212" until-build="212.*"/>
+    <idea-version since-build="201" until-build="212.*"/>
 
     <description><![CDATA[
     provide quick index and jump to the annotations or method of Guava EventBug.
