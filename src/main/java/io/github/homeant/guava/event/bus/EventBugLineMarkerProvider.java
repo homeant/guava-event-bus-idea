@@ -29,7 +29,9 @@ public class EventBugLineMarkerProvider implements LineMarkerProvider {
     public LineMarkerInfo<?> getLineMarkerInfo(@NotNull PsiElement element) {
         // post
         if (PsiUtils.isEventBusPostMethod(element)) {
-            return new LineMarkerInfo<>(element,element.getTextRange(),Constants.PUBLISHER_ICON,el -> Constants.PUBLISHER,this::publishHandle, GutterIconRenderer.Alignment.LEFT);
+            // 201
+            //return new LineMarkerInfo<>(element,element.getTextRange(),Constants.PUBLISHER_ICON,el -> Constants.PUBLISHER,this::publishHandle, GutterIconRenderer.Alignment.LEFT);
+            return new LineMarkerInfo<>(element,element.getTextRange(),Constants.PUBLISHER_ICON,el -> Constants.PUBLISHER,this::publishHandle, GutterIconRenderer.Alignment.LEFT,()->Constants.PUBLISHER);
 //            return gutterIconBuilder(element,Constants.PUBLISHER_ICON)
 //                    .setPopupTitle(Constants.PUBLISHER)
 //                    .setTooltipText(Constants.PUBLISHER)
@@ -37,7 +39,9 @@ public class EventBugLineMarkerProvider implements LineMarkerProvider {
         }
         // @Subscribe
         if (PsiUtils.isEventBusHandlerMethod(element)) {
-            return new LineMarkerInfo<>(element,element.getTextRange(),Constants.LISTENER_ICON,el -> Constants.LISTENER,this::listenHandle, GutterIconRenderer.Alignment.LEFT);
+            // 201
+            // return new LineMarkerInfo<>(element,element.getTextRange(),Constants.LISTENER_ICON,el -> Constants.LISTENER,this::listenHandle, GutterIconRenderer.Alignment.LEFT);
+            return new LineMarkerInfo<>(element,element.getTextRange(),Constants.LISTENER_ICON,el -> Constants.LISTENER,this::listenHandle, GutterIconRenderer.Alignment.LEFT,()->Constants.PUBLISHER);
 //            return gutterIconBuilder(element,Constants.LISTENER_ICON)
 //                    .setPopupTitle(Constants.LISTENER)
 //                    .setTooltipText(Constants.LISTENER)

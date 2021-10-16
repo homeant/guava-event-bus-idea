@@ -7,7 +7,7 @@ plugins {
 //apply plugin: "org.jetbrains.changelog"
 
 group 'io.github.homeant'
-version '1.0-201'
+version '1.0'
 
 sourceCompatibility=JavaVersion.VERSION_11
 targetCompatibility=JavaVersion.VERSION_11
