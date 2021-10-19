@@ -25,6 +25,7 @@
         <!-- Add your extensions here -->
         <codeInsight.lineMarkerProvider language="JAVA"
                                         implementationClass="io.github.homeant.guava.event.bus.EventBugLineMarkerProvider"/>
+        <projectConfigurable instance="io.github.homeant.guava.event.bus.config.EventBusConfigurable"/>
     </extensions>
 
     <actions>

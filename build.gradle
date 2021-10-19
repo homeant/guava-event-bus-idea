@@ -35,7 +35,7 @@ dependencies {
 // See https://github.com/JetBrains/gradle-intellij-plugin/
 intellij {
     plugins = ['java']
-    version = '2020.2.4'
+    version = '2021.2.3'
     type = 'IC'
     sameSinceUntilBuild = true //  Should plugin patch plugin.xml with an until build value that is just an "open" since build?
 }
