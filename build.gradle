@@ -7,7 +7,7 @@ plugins {
 //apply plugin: "org.jetbrains.changelog"
 
 group 'io.github.homeant'
-version '1.0'
+version '1.0-201'
 
 sourceCompatibility=JavaVersion.VERSION_11
 targetCompatibility=JavaVersion.VERSION_11
@@ -35,13 +35,15 @@ dependencies {
 // See https://github.com/JetBrains/gradle-intellij-plugin/
 intellij {
     plugins = ['java']
-    version = '2021.2.3'
+    version = '2020.2.4'
     type = 'IC'
+    sameSinceUntilBuild = true //  Should plugin patch plugin.xml with an until build value that is just an "open" since build?
 }
 patchPluginXml {
     changeNotes = """
      Release V1.0<br>
      provide quick index and jump to the annotations or method of Guava EventBug"""
+    untilBuild = '203.*'
 }
 
 publishPlugin{

@@ -1,6 +1,6 @@
 <idea-plugin>
     <id>io.github.homeant.guava-event-bus-idea</id>
-    <name>Guava Event Bus Idea</name>
+    <name>Guava Event Bus</name>
     <vendor email="homeanter@163.com" url="https://github.com/homeant">homeant</vendor>
 
     <idea-version since-build="211" until-build="212.*"/>
