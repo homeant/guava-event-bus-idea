@@ -3,7 +3,6 @@
     <name>Guava Event Bus Idea</name>
     <vendor email="homeanter@163.com" url="https://github.com/homeant">homeant</vendor>
 
-    <idea-version since-build="201" until-build="203.*"/>
 
 
     <description><![CDATA[
