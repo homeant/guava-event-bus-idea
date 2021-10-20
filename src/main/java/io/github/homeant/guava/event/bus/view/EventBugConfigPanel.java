@@ -16,15 +16,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class EventBugConfigPanel extends JPanel {
-    private final Project project;
 
     private ListPanel publishListPanel;
 
     private ListPanel listenListPanel;
 
-    public EventBugConfigPanel(Project project) {
+    public EventBugConfigPanel() {
         super(new BorderLayout());
-        this.project = project;
         Splitter splitter = new Splitter(true);
         add(splitter, BorderLayout.CENTER);
 

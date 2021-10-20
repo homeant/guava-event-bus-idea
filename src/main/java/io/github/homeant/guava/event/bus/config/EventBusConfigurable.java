@@ -12,10 +12,8 @@ import javax.swing.*;
 public class EventBusConfigurable implements Configurable {
     private EventBugConfigPanel eventBugConfigPanel;
 
-    private final Project project;
+    public EventBusConfigurable(){
 
-    public EventBusConfigurable(Project project){
-        this.project = project;
     }
 
     /**
