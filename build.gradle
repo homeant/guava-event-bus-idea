@@ -7,7 +7,7 @@ plugins {
 //apply plugin: "org.jetbrains.changelog"
 
 group 'io.github.homeant'
-version '1.0-201'
+version '1.1'
 
 sourceCompatibility=JavaVersion.VERSION_11
 targetCompatibility=JavaVersion.VERSION_11
@@ -43,7 +43,7 @@ patchPluginXml {
     changeNotes = """
      Release V1.0<br>
      provide quick index and jump to the annotations or method of Guava EventBug"""
-    untilBuild = '203.*'
+    //untilBuild = '203.*'
 }
 
 publishPlugin{

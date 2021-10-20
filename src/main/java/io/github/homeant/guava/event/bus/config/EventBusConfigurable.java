@@ -4,13 +4,13 @@ import com.intellij.openapi.options.Configurable;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.NlsContexts;
-import io.github.homeant.guava.event.bus.view.EventBugConfigView;
+import io.github.homeant.guava.event.bus.view.EventBugConfigPanel;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 
 public class EventBusConfigurable implements Configurable {
-    private EventBugConfigView eventBugConfigView;
+    private EventBugConfigPanel eventBugConfigPanel;
 
     private final Project project;
 
@@ -42,10 +42,10 @@ public class EventBusConfigurable implements Configurable {
      */
     @Override
     public @Nullable JComponent createComponent() {
-        if(eventBugConfigView==null){
-            eventBugConfigView = new EventBugConfigView(project);
+        if(eventBugConfigPanel==null){
+            eventBugConfigPanel = new EventBugConfigPanel(project);
         }
-        return eventBugConfigView.getRootPanel();
+        return eventBugConfigPanel;
     }
 
     /**
@@ -67,6 +67,6 @@ public class EventBusConfigurable implements Configurable {
      */
     @Override
     public void apply() throws ConfigurationException {
-        eventBugConfigView.save();
+        //eventBugConfigView.save();
     }
 }
