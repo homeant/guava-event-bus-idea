@@ -41,7 +41,7 @@ public class EventBusConfigurable implements Configurable {
     @Override
     public @Nullable JComponent createComponent() {
         if(eventBugConfigPanel==null){
-            eventBugConfigPanel = new EventBugConfigPanel(project);
+            eventBugConfigPanel = new EventBugConfigPanel();
         }
         return eventBugConfigPanel;
     }
