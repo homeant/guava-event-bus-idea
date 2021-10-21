@@ -61,8 +61,9 @@ public class PsiUtils {
             PsiModifierList modifierList = method.getModifierList();
             for (String pattern : listenList) {
                 if(pattern.startsWith("@")){
+                    String annotationName = pattern.substring(1);
                     for (PsiAnnotation psiAnnotation : modifierList.getAnnotations()) {
-                        if (safeEquals(psiAnnotation.getQualifiedName(),pattern.substring(1))) {
+                        if (safeEquals(psiAnnotation.getQualifiedName(),annotationName)) {
                             return true;
                         }
                     }
