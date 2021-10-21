@@ -20,36 +20,37 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import java.awt.event.MouseEvent;
+import java.util.Collection;
+import java.util.List;
 
 
 @Log
 public class EventBugLineMarkerProvider implements LineMarkerProvider {
 
+
     @Override
     public LineMarkerInfo<?> getLineMarkerInfo(@NotNull PsiElement element) {
-        Project project = element.getProject();
-        EventBusSettings settings = EventBusSettings.getInstance(project);
-        // post
-        if (PsiUtils.isPublisher(element,settings.getState().getPublisherList())) {
-            // 201
-            //return new LineMarkerInfo<>(element,element.getTextRange(),Constants.PUBLISHER_ICON,el -> Constants.PUBLISHER,this::publishHandle, GutterIconRenderer.Alignment.LEFT);
-            return new LineMarkerInfo<>(element,element.getTextRange(),Constants.PUBLISHER_ICON,el -> Constants.PUBLISHER,this::publishHandle, GutterIconRenderer.Alignment.LEFT,()->Constants.PUBLISHER);
-//            return gutterIconBuilder(element,Constants.PUBLISHER_ICON)
-//                    .setPopupTitle(Constants.PUBLISHER)
-//                    .setTooltipText(Constants.PUBLISHER)
-//                    .createLineMarkerInfo(element,this::publishHandle);
-        }
-        // @Subscribe
-        if (PsiUtils.isEventBusHandlerMethod(element)) {
-            // 201
-            // return new LineMarkerInfo<>(element,element.getTextRange(),Constants.LISTENER_ICON,el -> Constants.LISTENER,this::listenHandle, GutterIconRenderer.Alignment.LEFT);
-            return new LineMarkerInfo<>(element,element.getTextRange(),Constants.LISTENER_ICON,el -> Constants.LISTENER,this::listenHandle, GutterIconRenderer.Alignment.LEFT,()->Constants.PUBLISHER);
-//            return gutterIconBuilder(element,Constants.LISTENER_ICON)
-//                    .setPopupTitle(Constants.LISTENER)
-//                    .setTooltipText(Constants.LISTENER)
-//                    .createLineMarkerInfo(element, this::listenHandle);
-        }
         return null;
+    }
+
+    @Override
+    public void collectSlowLineMarkers(@NotNull List<? extends PsiElement> elements, @NotNull Collection<? super LineMarkerInfo<?>> result) {
+        for (PsiElement element : elements) {
+            Project project = element.getProject();
+            EventBusSettings settings = EventBusSettings.getInstance(project);
+            EventBusSettings.Setting setting = settings.getState();
+            if (PsiUtils.isPublisher(element,setting.getPublisherList())) {
+                // 201
+                //return new LineMarkerInfo<>(element,element.getTextRange(),Constants.PUBLISHER_ICON,el -> Constants.PUBLISHER,this::publishHandle, GutterIconRenderer.Alignment.LEFT);
+                result.add(new LineMarkerInfo<>(element,element.getTextRange(),Constants.PUBLISHER_ICON,el -> Constants.PUBLISHER,this::publishHandle, GutterIconRenderer.Alignment.LEFT,()->Constants.PUBLISHER));
+            }
+            // @Subscribe
+            if (PsiUtils.isListener(element,setting.getListenerList())) {
+                // 201
+                // return new LineMarkerInfo<>(element,element.getTextRange(),Constants.LISTENER_ICON,el -> Constants.LISTENER,this::listenHandle, GutterIconRenderer.Alignment.LEFT);
+              result.add(new LineMarkerInfo<>(element,element.getTextRange(),Constants.LISTENER_ICON,el -> Constants.LISTENER,this::listenHandle, GutterIconRenderer.Alignment.LEFT,()->Constants.PUBLISHER));
+            }
+        }
     }
 
     private NavigationGutterIconBuilder<PsiElement> gutterIconBuilder(PsiElement element, Icon icon){

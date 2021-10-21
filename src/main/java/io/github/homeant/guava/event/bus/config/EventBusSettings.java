@@ -1,33 +1,40 @@
 package io.github.homeant.guava.event.bus.config;
 
 import com.intellij.openapi.components.*;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.util.xml.Convert;
+import com.intellij.util.xmlb.annotations.Tag;
+import com.intellij.util.xmlb.annotations.XCollection;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 @State(name = "GuavaEventBusSettings", storages = @Storage("guavaEventBus.xml"))
 public class EventBusSettings implements PersistentStateComponent<EventBusSettings.Setting> {
+    Logger log = Logger.getInstance(EventBusSettings.class);
 
     private Setting setting = new Setting();
 
     public EventBusSettings() {
-        setting.setPublisherList(new ArrayList<>(Arrays.asList("com.google.common.eventbus.EventBus.post", "com.google.common.eventbus.AsyncEventBus.post")));
+
     }
 
     @Override
     public void loadState(@NotNull Setting state) {
-        this.setting = state;
+        log.info("loadState:"+state);
+        Set<String> listenerList = new HashSet<>(state.getListenerList());
+        Set<String> publisherList = new HashSet<>(state.getPublisherList());
+        setting.setPublisherList(new ArrayList<>(publisherList));
+        setting.setListenerList(new ArrayList<>(listenerList));
     }
 
     @Override
     public @Nullable EventBusSettings.Setting getState() {
+        log.info("getState:"+setting);
         return setting;
     }
 
@@ -37,7 +44,11 @@ public class EventBusSettings implements PersistentStateComponent<EventBusSettin
 
     @Data
     public static class Setting{
-        private List<String> listenerList = new ArrayList<>();
-        private List<String> publisherList = new ArrayList<>();
+        @Tag("listener")
+        @XCollection
+        private List<String> listenerList = new ArrayList<>(Arrays.asList("@com.google.common.eventbus.Subscribe"));
+        @Tag("publisher")
+        @XCollection
+        private List<String> publisherList = new ArrayList<>(Arrays.asList("com.google.common.eventbus.EventBus.post", "com.google.common.eventbus.AsyncEventBus.post"));
     }
 }

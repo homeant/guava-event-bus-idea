@@ -11,6 +11,7 @@ import com.intellij.openapi.util.NlsContexts;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.ui.AddEditDeleteListPanel;
 import com.intellij.ui.ListSpeedSearch;
+import lombok.extern.java.Log;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
@@ -19,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+@Log
 public class EventBusConfigurable implements Configurable {
     private static final Logger LOG = Logger.getInstance(EventBusConfigurable.class);
 
@@ -84,14 +86,14 @@ public class EventBusConfigurable implements Configurable {
      * Stores the settings from the Swing form to the configurable component.
      * This method is called on EDT upon user's request.
      *
-     * @throws ConfigurationException if values cannot be applied
      */
     @Override
-    public void apply() throws ConfigurationException {
+    public void apply() {
         EventBusSettings.Setting setting = eventBusSettings.getState();
         if(setting!=null) {
             listenListPanel.applyTo(setting.getListenerList());
             publishListPanel.applyTo(setting.getPublisherList());
+            log.info("apply setting:"+setting);
         }
     }
 
@@ -100,8 +102,6 @@ public class EventBusConfigurable implements Configurable {
         if(rootPanel!=null) {
             EventBusSettings.Setting setting = eventBusSettings.getState();
             if(setting!=null) {
-                setting.setPublisherList(new ArrayList<>(Arrays.asList("com.google.common.eventbus.EventBus.post", "com.google.common.eventbus.AsyncEventBus.post")));
-                setting.getListenerList().clear();
                 listenListPanel.resetFrom(setting.getListenerList());
                 publishListPanel.resetFrom(setting.getPublisherList());
             }
