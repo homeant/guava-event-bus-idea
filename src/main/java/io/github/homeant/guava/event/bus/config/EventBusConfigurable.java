@@ -29,7 +29,7 @@ public class EventBusConfigurable implements Configurable {
     private final EventBusSettings eventBusSettings;
 
     public EventBusConfigurable(Project project){
-        eventBusSettings = EventBusSettings.getSettings(project);
+        eventBusSettings = EventBusSettings.getInstance(project);
     }
 
     /**
@@ -88,22 +88,24 @@ public class EventBusConfigurable implements Configurable {
      */
     @Override
     public void apply() throws ConfigurationException {
-        listenListPanel.applyTo(eventBusSettings.getSetting().getListenerList());
-        publishListPanel.applyTo(eventBusSettings.getSetting().getPublisherList());
+        EventBusSettings.Setting setting = eventBusSettings.getState();
+        if(setting!=null) {
+            listenListPanel.applyTo(setting.getListenerList());
+            publishListPanel.applyTo(setting.getPublisherList());
+        }
     }
 
     @Override
     public void reset() {
-        EventBusSettings.Setting setting = eventBusSettings.getSetting();
-        setting.setPublisherList(new ArrayList<>(Arrays.asList("com.google.common.eventbus.EventBus.post","com.google.common.eventbus.AsyncEventBus.post")));
-        setting.setListenerList(new ArrayList<>());
-        listenListPanel.resetFrom(setting.getListenerList());
-        publishListPanel.resetFrom(setting.getPublisherList());
-    }
-
-    @Override
-    public void disposeUIResources() {
-        rootPanel = null;
+        if(rootPanel!=null) {
+            EventBusSettings.Setting setting = eventBusSettings.getState();
+            if(setting!=null) {
+                setting.setPublisherList(new ArrayList<>(Arrays.asList("com.google.common.eventbus.EventBus.post", "com.google.common.eventbus.AsyncEventBus.post")));
+                setting.getListenerList().clear();
+                listenListPanel.resetFrom(setting.getListenerList());
+                publishListPanel.resetFrom(setting.getPublisherList());
+            }
+        }
     }
 
     private static class ListPanel extends AddEditDeleteListPanel<String> {
@@ -153,10 +155,6 @@ public class EventBusConfigurable implements Configurable {
             for (Object o : getListItems()) {
                 patterns.add((String)o);
             }
-        }
-
-        public void addRule(String rule) {
-            addElement(rule);
         }
 
         @Override

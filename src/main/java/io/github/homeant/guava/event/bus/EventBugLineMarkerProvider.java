@@ -3,7 +3,6 @@ package io.github.homeant.guava.event.bus;
 import com.intellij.codeInsight.daemon.LineMarkerInfo;
 import com.intellij.codeInsight.daemon.LineMarkerProvider;
 import com.intellij.codeInsight.navigation.NavigationGutterIconBuilder;
-import com.intellij.openapi.actionSystem.ActionManager;
 import com.intellij.openapi.editor.markup.GutterIconRenderer;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.*;
@@ -13,6 +12,7 @@ import com.intellij.ui.awt.RelativePoint;
 import io.github.homeant.guava.event.bus.action.ListenFilter;
 import io.github.homeant.guava.event.bus.action.PublishFilter;
 import io.github.homeant.guava.event.bus.action.ShowUsagesAction;
+import io.github.homeant.guava.event.bus.config.EventBusSettings;
 import io.github.homeant.guava.event.bus.constant.Constants;
 import io.github.homeant.guava.event.bus.utils.PsiUtils;
 import lombok.extern.java.Log;
@@ -27,8 +27,10 @@ public class EventBugLineMarkerProvider implements LineMarkerProvider {
 
     @Override
     public LineMarkerInfo<?> getLineMarkerInfo(@NotNull PsiElement element) {
+        Project project = element.getProject();
+        EventBusSettings settings = EventBusSettings.getInstance(project);
         // post
-        if (PsiUtils.isEventBusPostMethod(element)) {
+        if (PsiUtils.isPublisher(element,settings.getState().getPublisherList())) {
             // 201
             //return new LineMarkerInfo<>(element,element.getTextRange(),Constants.PUBLISHER_ICON,el -> Constants.PUBLISHER,this::publishHandle, GutterIconRenderer.Alignment.LEFT);
             return new LineMarkerInfo<>(element,element.getTextRange(),Constants.PUBLISHER_ICON,el -> Constants.PUBLISHER,this::publishHandle, GutterIconRenderer.Alignment.LEFT,()->Constants.PUBLISHER);

@@ -7,6 +7,8 @@ import com.intellij.psi.impl.source.tree.java.PsiMethodCallExpressionImpl;
 import com.intellij.psi.impl.source.tree.java.PsiReferenceExpressionImpl;
 import io.github.homeant.guava.event.bus.constant.Constants;
 
+import java.util.List;
+
 public class PsiUtils {
     private PsiUtils() {
 
@@ -26,6 +28,25 @@ public class PsiUtils {
                 boolean isAsyncEventBusClass = start.getType() != null && safeEquals(Constants.EVENT_ASYNC_CLASS_ABS_NAME, start.getType().getCanonicalText());
                 if (safeEquals(post.getText(), Constants.PUBLISHER_FUNC_NAME) && (isEventBusClass || isAsyncEventBusClass)) {
                     return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    public static boolean isPublisher(PsiElement element, List<String> publishList) {
+        if (isJava(element) && element instanceof PsiMethodCallExpressionImpl && element.getFirstChild() != null && element.getFirstChild() instanceof PsiReferenceExpressionImpl) {
+            PsiReferenceExpressionImpl all = (PsiReferenceExpressionImpl) element.getFirstChild();
+            if (all.getFirstChild() instanceof PsiReferenceExpression) {
+                PsiReferenceExpression start = (PsiReferenceExpression) all.getFirstChild();
+                PsiIdentifierImpl post = (PsiIdentifierImpl) all.getLastChild();
+                for (String pattern : publishList) {
+                    int index = pattern.lastIndexOf(".");
+                    String method = pattern.substring(index+1);
+                    String className = pattern.substring(0, index);
+                    if (safeEquals(post.getText(), method) && start.getType() != null && safeEquals(className, start.getType().getCanonicalText())) {
+                        return true;
+                    }
                 }
             }
         }
