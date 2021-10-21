@@ -1,7 +1,9 @@
 package io.github.homeant.guava.event.bus.config;
 
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.options.Configurable;
 import com.intellij.openapi.options.ConfigurationException;
+import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.InputValidatorEx;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.ui.Splitter;
@@ -14,17 +16,20 @@ import org.jetbrains.annotations.Nullable;
 import javax.swing.*;
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class EventBusConfigurable implements Configurable {
+    private static final Logger LOG = Logger.getInstance(EventBusConfigurable.class);
+
     private JPanel rootPanel;
     private ListPanel listenListPanel;
     private ListPanel publishListPanel;
 
-    private final EventBusSettings eventBusSettings = EventBusSettings.getSettings();
+    private final EventBusSettings eventBusSettings;
 
-    public EventBusConfigurable() {
-
+    public EventBusConfigurable(Project project){
+        eventBusSettings = EventBusSettings.getSettings(project);
     }
 
     /**
@@ -52,6 +57,7 @@ public class EventBusConfigurable implements Configurable {
     @Override
     public @Nullable JComponent createComponent() {
         if(rootPanel==null){
+            LOG.info("created EventBus config");
             rootPanel = new JPanel(new BorderLayout());
             Splitter splitter = new Splitter(true);
             rootPanel.add(splitter, BorderLayout.CENTER);
@@ -82,9 +88,17 @@ public class EventBusConfigurable implements Configurable {
      */
     @Override
     public void apply() throws ConfigurationException {
-        listenListPanel.applyTo(eventBusSettings.getListenerList());
-        publishListPanel.applyTo(eventBusSettings.getPublisherList());
-        //eventBugConfigView.save();
+        listenListPanel.applyTo(eventBusSettings.getSetting().getListenerList());
+        publishListPanel.applyTo(eventBusSettings.getSetting().getPublisherList());
+    }
+
+    @Override
+    public void reset() {
+        EventBusSettings.Setting setting = eventBusSettings.getSetting();
+        setting.setPublisherList(new ArrayList<>(Arrays.asList("com.google.common.eventbus.EventBus.post","com.google.common.eventbus.AsyncEventBus.post")));
+        setting.setListenerList(new ArrayList<>());
+        listenListPanel.resetFrom(setting.getListenerList());
+        publishListPanel.resetFrom(setting.getPublisherList());
     }
 
     @Override
@@ -122,7 +136,7 @@ public class EventBusConfigurable implements Configurable {
                 @Override
                 public @NlsContexts.DetailedDescription @Nullable String getErrorText(String inputString) {
                     if (!checkInput(inputString)) {
-                        return "eventBus rule string cannot be empty";
+                        return "EventBus rule string cannot be empty";
                     }
                     return null;
                 }

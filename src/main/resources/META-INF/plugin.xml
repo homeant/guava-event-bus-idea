@@ -22,8 +22,8 @@
     <extensions defaultExtensionNs="com.intellij">
         <!-- Add your extensions here -->
 
-        <applicationService serviceImplementation="io.github.homeant.guava.event.bus.config.EventBusSettings"/>
-        <applicationConfigurable groupId="tools" instance="io.github.homeant.guava.event.bus.config.EventBusConfigurable"/>
+        <projectService serviceImplementation="io.github.homeant.guava.event.bus.config.EventBusSettings"/>
+        <projectConfigurable groupId="other" instance="io.github.homeant.guava.event.bus.config.EventBusConfigurable"/>
 
         <codeInsight.lineMarkerProvider language="JAVA"
                                         implementationClass="io.github.homeant.guava.event.bus.EventBugLineMarkerProvider"/>
