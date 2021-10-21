@@ -2,17 +2,28 @@ package io.github.homeant.guava.event.bus.config;
 
 import com.intellij.openapi.options.Configurable;
 import com.intellij.openapi.options.ConfigurationException;
-import com.intellij.openapi.project.Project;
+import com.intellij.openapi.ui.InputValidatorEx;
+import com.intellij.openapi.ui.Messages;
+import com.intellij.openapi.ui.Splitter;
 import com.intellij.openapi.util.NlsContexts;
-import io.github.homeant.guava.event.bus.view.EventBugConfigPanel;
+import com.intellij.openapi.util.text.StringUtil;
+import com.intellij.ui.AddEditDeleteListPanel;
+import com.intellij.ui.ListSpeedSearch;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
+import java.awt.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class EventBusConfigurable implements Configurable {
-    private EventBugConfigPanel eventBugConfigPanel;
+    private JPanel rootPanel;
+    private ListPanel listenListPanel;
+    private ListPanel publishListPanel;
 
-    public EventBusConfigurable(){
+    private final EventBusSettings eventBusSettings = EventBusSettings.getSettings();
+
+    public EventBusConfigurable() {
 
     }
 
@@ -26,7 +37,7 @@ public class EventBusConfigurable implements Configurable {
      */
     @Override
     public @NlsContexts.ConfigurableName String getDisplayName() {
-        return "EventBus";
+        return "Event Bus";
     }
 
     /**
@@ -40,10 +51,16 @@ public class EventBusConfigurable implements Configurable {
      */
     @Override
     public @Nullable JComponent createComponent() {
-        if(eventBugConfigPanel==null){
-            eventBugConfigPanel = new EventBugConfigPanel();
+        if(rootPanel==null){
+            rootPanel = new JPanel(new BorderLayout());
+            Splitter splitter = new Splitter(true);
+            rootPanel.add(splitter, BorderLayout.CENTER);
+            publishListPanel = new ListPanel("Publisher filter:","Enter a substring of a publisher you'd like to see editor:");
+            listenListPanel = new ListPanel("Listener filter:","Enter a substring of a listener you'd like to see editor:");
+            splitter.setFirstComponent(publishListPanel);
+            splitter.setSecondComponent(listenListPanel);
         }
-        return eventBugConfigPanel;
+        return rootPanel;
     }
 
     /**
@@ -65,6 +82,72 @@ public class EventBusConfigurable implements Configurable {
      */
     @Override
     public void apply() throws ConfigurationException {
+        listenListPanel.applyTo(eventBusSettings.getListenerList());
+        publishListPanel.applyTo(eventBusSettings.getPublisherList());
         //eventBugConfigView.save();
+    }
+
+    @Override
+    public void disposeUIResources() {
+        rootPanel = null;
+    }
+
+    private static class ListPanel extends AddEditDeleteListPanel<String> {
+
+        private final @NlsContexts.DialogMessage String message;
+
+        public ListPanel(@NlsContexts.Label String title,@NlsContexts.DialogMessage String message) {
+            super(title, new ArrayList<>());
+            this.message = message;
+            new ListSpeedSearch<>(myList);
+        }
+
+        @Override
+        protected @Nullable String findItemToAdd() {
+            return showEditDialog("");
+        }
+
+        private @Nullable String showEditDialog(final String initialValue) {
+            return Messages.showInputDialog(this, message, "EventBus Pattern", Messages.getQuestionIcon(), initialValue, new InputValidatorEx() {
+                @Override
+                public boolean checkInput(String inputString) {
+                    return !StringUtil.isEmpty(inputString);
+                }
+
+                @Override
+                public boolean canClose(String inputString) {
+                    return !StringUtil.isEmpty(inputString);
+                }
+
+                @Override
+                public @NlsContexts.DetailedDescription @Nullable String getErrorText(String inputString) {
+                    if (!checkInput(inputString)) {
+                        return "eventBus rule string cannot be empty";
+                    }
+                    return null;
+                }
+            });
+        }
+
+        void resetFrom(List<String> patterns) {
+            myListModel.clear();
+            patterns.stream().sorted(String.CASE_INSENSITIVE_ORDER).forEach(myListModel::addElement);
+        }
+
+        void applyTo(List<? super String> patterns) {
+            patterns.clear();
+            for (Object o : getListItems()) {
+                patterns.add((String)o);
+            }
+        }
+
+        public void addRule(String rule) {
+            addElement(rule);
+        }
+
+        @Override
+        protected String editSelectedItem(String item) {
+            return showEditDialog(item);
+        }
     }
 }
