@@ -3,14 +3,17 @@ package io.github.homeant.guava.event.bus.utils;
 import com.intellij.lang.Language;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.*;
+import com.intellij.psi.impl.source.PsiClassReferenceType;
 import com.intellij.psi.impl.source.tree.java.PsiIdentifierImpl;
 import com.intellij.psi.impl.source.tree.java.PsiMethodCallExpressionImpl;
 import com.intellij.psi.impl.source.tree.java.PsiReferenceExpressionImpl;
 import com.intellij.psi.search.GlobalSearchScope;
 import io.github.homeant.guava.event.bus.constant.Constants;
+import lombok.extern.java.Log;
 
 import java.util.List;
 
+@Log
 public class PsiUtils {
     private PsiUtils() {
 
@@ -41,13 +44,27 @@ public class PsiUtils {
             PsiReferenceExpressionImpl all = (PsiReferenceExpressionImpl) element.getFirstChild();
             if (all.getFirstChild() instanceof PsiReferenceExpression) {
                 PsiReferenceExpression start = (PsiReferenceExpression) all.getFirstChild();
+                PsiType type = start.getType();
                 PsiIdentifierImpl post = (PsiIdentifierImpl) all.getLastChild();
-                for (String pattern : publishList) {
-                    int index = pattern.lastIndexOf(".");
-                    String method = pattern.substring(index+1);
-                    String className = pattern.substring(0, index);
-                    if (safeEquals(post.getText(), method) && start.getType() != null && safeEquals(className, start.getType().getCanonicalText())) {
-                        return true;
+                if(type!=null){
+                    for (String pattern : publishList) {
+                        int index = pattern.lastIndexOf(".");
+                        String method = pattern.substring(index+1);
+                        String className = pattern.substring(0, index);
+
+                        if (safeEquals(post.getText(), method) && safeEquals(className, type.getCanonicalText())) {
+                            return true;
+                        }
+                        PsiType[] superTypes = type.getSuperTypes();
+                        for (PsiType superType : superTypes) {
+                            if(superType instanceof PsiClassReferenceType) {
+                                PsiClass supperClass = ((PsiClassReferenceType) superType).resolve();
+                                if (supperClass != null && safeEquals(className, supperClass.getQualifiedName())) {
+                                    return true;
+                                }
+                            }
+                        }
+
                     }
                 }
             }
@@ -74,13 +91,19 @@ public class PsiUtils {
                     Project project = element.getProject();
                     JavaPsiFacade javaPsiFacade = JavaPsiFacade.getInstance(project);
                     PsiClass patternPsiClass = javaPsiFacade.findClass(className, GlobalSearchScope.allScope(project));
-                    if(patternPsiClass.isInterface()){
-                        PsiReferenceList implementsList = patternPsiClass.getImplementsList();
-
-                    }else{
-                        PsiClass psiClass = method.getContainingClass();
-                        if(safeEquals(className,psiClass.getQualifiedName()) && safeEquals(methodName,method.getName())){
-                            return true;
+                    PsiClass psiClass = method.getContainingClass();
+                    if(psiClass != null && patternPsiClass!=null) {
+                        if (patternPsiClass.isInterface()) {
+                            PsiClass[] supers = psiClass.getSupers();
+                            for (PsiClass supplierClass : supers) {
+                                if(safeEquals(className,supplierClass.getQualifiedName()) && safeEquals(methodName,method.getName())){
+                                    return true;
+                                }
+                            }
+                        } else {
+                            if (safeEquals(className, psiClass.getQualifiedName()) && safeEquals(methodName, method.getName())) {
+                                return true;
+                            }
                         }
                     }
                 }
