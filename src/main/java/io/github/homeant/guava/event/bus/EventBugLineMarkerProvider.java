@@ -1,5 +1,6 @@
 package io.github.homeant.guava.event.bus;
 
+import com.intellij.codeInsight.daemon.GutterIconNavigationHandler;
 import com.intellij.codeInsight.daemon.LineMarkerInfo;
 import com.intellij.codeInsight.daemon.LineMarkerProvider;
 import com.intellij.codeInsight.navigation.NavigationGutterIconBuilder;
@@ -8,9 +9,9 @@ import com.intellij.openapi.project.Project;
 import com.intellij.psi.*;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.util.PsiEditorUtil;
+import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.ui.awt.RelativePoint;
-import io.github.homeant.guava.event.bus.action.ListenFilter;
-import io.github.homeant.guava.event.bus.action.PublishFilter;
+import io.github.homeant.guava.event.bus.action.ListenerFilter;
 import io.github.homeant.guava.event.bus.action.ShowUsagesAction;
 import io.github.homeant.guava.event.bus.config.EventBusSettings;
 import io.github.homeant.guava.event.bus.constant.Constants;
@@ -40,17 +41,24 @@ public class EventBugLineMarkerProvider implements LineMarkerProvider {
             EventBusSettings settings = EventBusSettings.getInstance(project);
             EventBusSettings.Setting setting = settings.getState();
             if (PsiUtils.isPublisher(element,setting.getPublisherList())) {
-                // 201
-                //return new LineMarkerInfo<>(element,element.getTextRange(),Constants.PUBLISHER_ICON,el -> Constants.PUBLISHER,this::publishHandle, GutterIconRenderer.Alignment.LEFT);
-                result.add(new LineMarkerInfo<>(element,element.getTextRange(),Constants.PUBLISHER_ICON,el -> Constants.PUBLISHER,this::publishHandle, GutterIconRenderer.Alignment.LEFT,()->Constants.PUBLISHER));
+                result.add(new LineMarkerInfo<>(element,element.getTextRange(),Constants.PUBLISHER_ICON,null,this::publishHandle, GutterIconRenderer.Alignment.LEFT,()->Constants.PUBLISHER));
             }
             // @Subscribe
             if (PsiUtils.isListener(element,setting.getListenerList())) {
-                // 201
-                // return new LineMarkerInfo<>(element,element.getTextRange(),Constants.LISTENER_ICON,el -> Constants.LISTENER,this::listenHandle, GutterIconRenderer.Alignment.LEFT);
-              result.add(new LineMarkerInfo<>(element,element.getTextRange(),Constants.LISTENER_ICON,el -> Constants.LISTENER,this::listenHandle, GutterIconRenderer.Alignment.LEFT,()->Constants.PUBLISHER));
+                PsiMethod method = (PsiMethod)element;
+                result.add(createIconLineMarker(method.getIdentifyingElement(),Constants.LISTENER_ICON,this::listenHandle));
             }
         }
+    }
+
+    private LineMarkerInfo<PsiElement> createIconLineMarker(PsiElement element, Icon icon, GutterIconNavigationHandler<PsiElement> navHandler){
+        return new LineMarkerInfo<>(element,
+                element.getTextRange(),
+                icon,
+                null,
+                navHandler,
+                GutterIconRenderer.Alignment.LEFT,
+                ()->"");
     }
 
     private NavigationGutterIconBuilder<PsiElement> gutterIconBuilder(PsiElement element, Icon icon){
@@ -72,12 +80,12 @@ public class EventBugLineMarkerProvider implements LineMarkerProvider {
                 if (expressionTypes.length > 0) {
                     PsiClass eventClass = PsiUtils.getClass(expressionTypes[0]);
                     if (eventClass != null) {
-                        ShowUsagesAction action = new ShowUsagesAction(new PublishFilter());
+                        ShowUsagesAction action = new ShowUsagesAction(new ListenerFilter());
                         action.startFindUsages(eventClass, new RelativePoint(event), PsiEditorUtil.findEditor(elt), 100);
                     }
                 }
-            } catch (Exception ee) {
-                ee.fillInStackTrace();
+            } catch (Exception e) {
+                e.printStackTrace();
             }
 
         }
@@ -86,17 +94,20 @@ public class EventBugLineMarkerProvider implements LineMarkerProvider {
     /**
      * 监听者处理
      * @param event event
-     * @param elt elt
+     * @param element element
      */
-    private void listenHandle(MouseEvent event, PsiElement elt){
-        if (elt instanceof PsiMethod) {
-            Project project = elt.getProject();
+    private void listenHandle(MouseEvent event, PsiElement element){
+        Project project = element.getProject();
+        if(element instanceof PsiIdentifier){
+            element = PsiTreeUtil.getParentOfType(element,PsiMethod.class);
+        }
+        if (element instanceof PsiMethod) {
             JavaPsiFacade javaPsiFacade = JavaPsiFacade.getInstance(project);
             // com.google.common.eventbus.EventBus
             PsiClass eventBusClass = javaPsiFacade.findClass(Constants.EVENT_CLASS_ABS_NAME, GlobalSearchScope.allScope(project));
             if (eventBusClass == null) return;
 
-            PsiMethod method = (PsiMethod) elt;
+            PsiMethod method = (PsiMethod) element;
             // 查找 eventBus.post
             PsiMethod postMethod = eventBusClass.findMethodsByName(Constants.PUBLISHER_FUNC_NAME, false)[0];
             if (null != postMethod) {
@@ -105,8 +116,9 @@ public class EventBugLineMarkerProvider implements LineMarkerProvider {
                     // 参数
                     PsiClass eventClass = ((PsiClassType) parameter.getType()).resolve();
                     if (eventClass != null) {
-                        ShowUsagesAction action = new ShowUsagesAction(new ListenFilter(eventClass));
-                        action.startFindUsages(postMethod, new RelativePoint(event), PsiEditorUtil.findEditor(elt), 100);
+                        com.intellij.find.actions.ShowUsagesAction.startFindUsages(postMethod,new RelativePoint(event),PsiEditorUtil.findEditor(element));
+//                        ShowUsagesAction action = new ShowUsagesAction(new PublisherFilter(eventClass));
+//                        action.startFindUsages(postMethod, new RelativePoint(event), PsiEditorUtil.findEditor(element), 100);
                     }
                 }
             }

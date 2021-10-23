@@ -40,63 +40,71 @@ public class PsiUtils {
     }
 
     public static boolean isPublisher(PsiElement element, List<String> publishList) {
-        if (isJava(element) && element instanceof PsiMethodCallExpressionImpl && element.getFirstChild() != null && element.getFirstChild() instanceof PsiReferenceExpressionImpl) {
+        if(!isJava(element)){
+            return false;
+        }
+        if (element instanceof PsiMethodCallExpressionImpl && element.getFirstChild() != null && element.getFirstChild() instanceof PsiReferenceExpressionImpl) {
             PsiReferenceExpressionImpl all = (PsiReferenceExpressionImpl) element.getFirstChild();
-            if (all.getFirstChild() instanceof PsiReferenceExpression) {
-                PsiReferenceExpression start = (PsiReferenceExpression) all.getFirstChild();
-                PsiType type = start.getType();
-                PsiIdentifierImpl post = (PsiIdentifierImpl) all.getLastChild();
-                if(type!=null){
+            PsiElement firstChild = all.getFirstChild();
+            if (firstChild instanceof PsiExpression) {
+                PsiType type = ((PsiExpression) firstChild).getType();
+                PsiIdentifierImpl methodIdentifier = (PsiIdentifierImpl) all.getLastChild();
                     for (String pattern : publishList) {
                         int index = pattern.lastIndexOf(".");
-                        String method = pattern.substring(index+1);
+                        String methodName = pattern.substring(index + 1);
                         String className = pattern.substring(0, index);
-
-                        if (safeEquals(post.getText(), method) && safeEquals(className, type.getCanonicalText())) {
-                            return true;
-                        }
-                        PsiType[] superTypes = type.getSuperTypes();
-                        for (PsiType superType : superTypes) {
-                            if(superType instanceof PsiClassReferenceType) {
-                                PsiClass supperClass = ((PsiClassReferenceType) superType).resolve();
-                                if (supperClass != null && safeEquals(className, supperClass.getQualifiedName())) {
-                                    return true;
+                        if (type != null) {
+                            if (safeEquals(methodIdentifier.getText(), methodName) && safeEquals(className, type.getCanonicalText())) {
+                                return true;
+                            }
+                            PsiType[] superTypes = type.getSuperTypes();
+                            for (PsiType superType : superTypes) {
+                                if (superType instanceof PsiClassReferenceType) {
+                                    PsiClass supperClass = ((PsiClassReferenceType) superType).resolve();
+                                    if (supperClass != null && safeEquals(className, supperClass.getQualifiedName())) {
+                                        return true;
+                                    }
                                 }
                             }
                         }
-
+                        if (firstChild instanceof PsiReferenceExpression && safeEquals(methodIdentifier.getText(), methodName) && safeEquals(className,((PsiReferenceExpressionImpl) firstChild).getCanonicalText())) {
+                            return true;
+                        }
                     }
-                }
+
             }
         }
         return false;
     }
 
-    public static boolean isListener(PsiElement element,List<String> listenList) {
-        if (isJava(element) && element instanceof PsiMethod) {
+    public static boolean isListener(PsiElement element, List<String> listenList) {
+        if(!isJava(element)){
+            return false;
+        }
+        if (element instanceof PsiMethod) {
             PsiMethod method = (PsiMethod) element;
             PsiModifierList modifierList = method.getModifierList();
             for (String pattern : listenList) {
-                if(pattern.startsWith("@")){
+                if (pattern.startsWith("@")) {
                     String annotationName = pattern.substring(1);
                     for (PsiAnnotation psiAnnotation : modifierList.getAnnotations()) {
-                        if (safeEquals(psiAnnotation.getQualifiedName(),annotationName)) {
+                        if (safeEquals(psiAnnotation.getQualifiedName(), annotationName)) {
                             return true;
                         }
                     }
-                }else{
+                } else {
                     int index = pattern.lastIndexOf(".");
-                    String className = pattern.substring(0,index);
-                    String methodName = pattern.substring(index+1);
+                    String className = pattern.substring(0, index);
+                    String methodName = pattern.substring(index + 1);
                     Project project = element.getProject();
                     JavaPsiFacade javaPsiFacade = JavaPsiFacade.getInstance(project);
                     PsiClass patternPsiClass = javaPsiFacade.findClass(className, GlobalSearchScope.allScope(project));
                     PsiClass psiClass = method.getContainingClass();
-                    if(psiClass != null && patternPsiClass!=null) {
+                    if (psiClass != null && patternPsiClass != null) {
                         if (patternPsiClass.isInterface()) {
                             PsiClass[] supers = psiClass.getSupers();
                             for (PsiClass supplierClass : supers) {
-                                if(safeEquals(className,supplierClass.getQualifiedName()) && safeEquals(methodName,method.getName())){
+                                if (safeEquals(className, supplierClass.getQualifiedName()) && safeEquals(methodName, method.getName())) {
                                     return true;
                                 }
                             }

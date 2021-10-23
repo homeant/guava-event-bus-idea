@@ -5,8 +5,14 @@ import com.intellij.usages.Usage;
 import com.intellij.usages.UsageInfo2UsageAdapter;
 import io.github.homeant.guava.event.bus.utils.PsiUtils;
 
+import java.util.List;
 
-public class PublishFilter implements Filter {
+
+public class ListenerFilter implements Filter {
+
+    private List<String> publishList;
+
+
     @Override
     public boolean shouldShow(Usage usage) {
         PsiElement element = ((UsageInfo2UsageAdapter) usage).getElement();

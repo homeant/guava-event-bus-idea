@@ -9,11 +9,11 @@ import lombok.extern.java.Log;
 import java.util.Objects;
 
 @Log
-public class ListenFilter implements Filter{
+public class PublisherFilter implements Filter{
 
     private final PsiClass eventClass;
 
-    public ListenFilter(PsiClass eventClass) {
+    public PublisherFilter(PsiClass eventClass) {
         this.eventClass = eventClass;
     }
 
