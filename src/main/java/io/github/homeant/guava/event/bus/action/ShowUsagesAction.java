@@ -361,7 +361,7 @@ public class ShowUsagesAction extends AnAction implements PopupAction{
                     String title = presentation.getTabText();
                     boolean shouldShowMoreSeparator = visibleNodes.contains(MORE_USAGES_SEPARATOR_NODE);
                     String fullTitle = getFullTitle(usages, title, shouldShowMoreSeparator, visibleNodes.size() - (shouldShowMoreSeparator ? 1 : 0), false);
-                    ((AbstractPopup)popup).setCaption(fullTitle);
+                    popup.setCaption(fullTitle);
                 }
             }
         }, project.getDisposed()));
@@ -954,16 +954,13 @@ public class ShowUsagesAction extends AnAction implements PopupAction{
         if (newEditor == null) return;
         final Project project = handler.getProject();
         //opening editor is performing in invokeLater
-        IdeFocusManager.getInstance(project).doWhenFocusSettlesDown(() -> newEditor.getScrollingModel().runActionOnScrollingFinished(new Runnable() {
-            @Override
-            public void run() {
-                // after new editor created, some editor resizing events are still bubbling. To prevent hiding hint, invokeLater this
-                IdeFocusManager.getInstance(project).doWhenFocusSettlesDown(() -> {
-                    if (newEditor.getComponent().isShowing()) {
-                        showHint(hint, newEditor, popupPosition, handler, maxUsages, options);
-                    }
-                });
-            }
+        IdeFocusManager.getInstance(project).doWhenFocusSettlesDown(() -> newEditor.getScrollingModel().runActionOnScrollingFinished(() -> {
+            // after new editor created, some editor resizing events are still bubbling. To prevent hiding hint, invokeLater this
+            IdeFocusManager.getInstance(project).doWhenFocusSettlesDown(() -> {
+                if (newEditor.getComponent().isShowing()) {
+                    showHint(hint, newEditor, popupPosition, handler, maxUsages, options);
+                }
+            });
         }));
     }
 

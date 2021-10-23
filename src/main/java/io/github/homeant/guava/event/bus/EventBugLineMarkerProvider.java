@@ -12,6 +12,7 @@ import com.intellij.psi.util.PsiEditorUtil;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.ui.awt.RelativePoint;
 import io.github.homeant.guava.event.bus.action.ListenerFilter;
+import io.github.homeant.guava.event.bus.action.PublisherFilter;
 import io.github.homeant.guava.event.bus.action.ShowUsagesAction;
 import io.github.homeant.guava.event.bus.config.EventBusSettings;
 import io.github.homeant.guava.event.bus.constant.Constants;
@@ -117,9 +118,8 @@ public class EventBugLineMarkerProvider implements LineMarkerProvider {
                     // 参数
                     PsiClass eventClass = ((PsiClassType) parameter.getType()).resolve();
                     if (eventClass != null) {
-                        com.intellij.find.actions.ShowUsagesAction.startFindUsages(postMethod,new RelativePoint(event),PsiEditorUtil.findEditor(element));
-//                        ShowUsagesAction action = new ShowUsagesAction(new PublisherFilter(eventClass));
-//                        action.startFindUsages(postMethod, new RelativePoint(event), PsiEditorUtil.findEditor(element), 100);
+                        ShowUsagesAction action = new ShowUsagesAction(new PublisherFilter(eventClass));
+                        action.startFindUsages(postMethod, new RelativePoint(event), PsiEditorUtil.findEditor(element), 100);
                     }
                 }
             }
