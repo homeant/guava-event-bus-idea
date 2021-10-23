@@ -40,10 +40,11 @@ public class EventBugLineMarkerProvider implements LineMarkerProvider {
             Project project = element.getProject();
             EventBusSettings settings = EventBusSettings.getInstance(project);
             EventBusSettings.Setting setting = settings.getState();
+            // publisher
             if (PsiUtils.isPublisher(element,setting.getPublisherList())) {
                 result.add(new LineMarkerInfo<>(element,element.getTextRange(),Constants.PUBLISHER_ICON,null,this::publishHandle, GutterIconRenderer.Alignment.LEFT,()->Constants.PUBLISHER));
             }
-            // @Subscribe
+            // listener
             if (PsiUtils.isListener(element,setting.getListenerList())) {
                 PsiMethod method = (PsiMethod)element;
                 result.add(createIconLineMarker(method.getIdentifyingElement(),Constants.LISTENER_ICON,this::listenHandle));
