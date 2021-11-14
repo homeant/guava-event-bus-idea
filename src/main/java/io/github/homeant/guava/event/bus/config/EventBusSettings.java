@@ -15,13 +15,11 @@ import java.util.*;
 
 @State(name = "GuavaEventBusSettings", storages = @Storage("guavaEventBus.xml"))
 public class EventBusSettings implements PersistentStateComponent<EventBusSettings.Setting> {
-    Logger log = Logger.getInstance(EventBusSettings.class);
 
     private final Setting setting = new Setting();
 
     @Override
     public void loadState(@NotNull Setting state) {
-        log.info("loadState:"+state);
         Set<String> listenerList = new HashSet<>(state.getListenerList());
         Set<String> publisherList = new HashSet<>(state.getPublisherList());
         setting.setPublisherList(new ArrayList<>(publisherList));
@@ -30,7 +28,6 @@ public class EventBusSettings implements PersistentStateComponent<EventBusSettin
 
     @Override
     public @Nullable EventBusSettings.Setting getState() {
-        log.info("getState:"+setting);
         return setting;
     }
 
