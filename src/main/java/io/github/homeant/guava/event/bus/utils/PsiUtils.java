@@ -8,12 +8,10 @@ import com.intellij.psi.impl.source.tree.java.PsiIdentifierImpl;
 import com.intellij.psi.impl.source.tree.java.PsiMethodCallExpressionImpl;
 import com.intellij.psi.impl.source.tree.java.PsiReferenceExpressionImpl;
 import com.intellij.psi.search.GlobalSearchScope;
-import lombok.extern.java.Log;
 
 import java.util.List;
 import java.util.Objects;
 
-@Log
 public class PsiUtils {
     private PsiUtils() {
 

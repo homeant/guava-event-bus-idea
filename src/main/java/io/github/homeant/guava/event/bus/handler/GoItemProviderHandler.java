@@ -1,13 +1,11 @@
 package io.github.homeant.guava.event.bus.handler;
 
 import com.intellij.codeInsight.navigation.NavigationUtil;
-import com.intellij.find.findUsages.FindUsagesHandlerBase;
 import com.intellij.navigation.GotoRelatedItem;
 import com.intellij.psi.PsiElement;
 import com.intellij.ui.awt.RelativePoint;
 import com.intellij.usages.Usage;
 
-import java.awt.event.MouseEvent;
 import java.util.List;
 
 public interface GoItemProviderHandler {

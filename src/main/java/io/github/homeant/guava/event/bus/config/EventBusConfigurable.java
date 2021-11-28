@@ -20,7 +20,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-@Log
 public class EventBusConfigurable implements Configurable {
     private static final Logger LOG = Logger.getInstance(EventBusConfigurable.class);
 
@@ -93,7 +92,6 @@ public class EventBusConfigurable implements Configurable {
         if(setting!=null) {
             listenListPanel.applyTo(setting.getListenerList());
             publishListPanel.applyTo(setting.getPublisherList());
-            log.info("apply setting:"+setting);
         }
     }
 
