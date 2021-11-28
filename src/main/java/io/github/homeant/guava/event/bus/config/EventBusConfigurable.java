@@ -2,22 +2,18 @@ package io.github.homeant.guava.event.bus.config;
 
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.options.Configurable;
-import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.InputValidatorEx;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.ui.Splitter;
-import com.intellij.openapi.util.NlsContexts;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.ui.AddEditDeleteListPanel;
 import com.intellij.ui.ListSpeedSearch;
-import lombok.extern.java.Log;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.awt.*;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class EventBusConfigurable implements Configurable {
@@ -42,7 +38,7 @@ public class EventBusConfigurable implements Configurable {
      * @return the visible name of the configurable component
      */
     @Override
-    public @NlsContexts.ConfigurableName String getDisplayName() {
+    public String getDisplayName() {
         return "Event Bus";
     }
 
@@ -108,9 +104,9 @@ public class EventBusConfigurable implements Configurable {
 
     private static class ListPanel extends AddEditDeleteListPanel<String> {
 
-        private final @NlsContexts.DialogMessage String message;
+        private final String message;
 
-        public ListPanel(@NlsContexts.Label String title,@NlsContexts.DialogMessage String message) {
+        public ListPanel(String title,String message) {
             super(title, new ArrayList<>());
             this.message = message;
             new ListSpeedSearch<>(myList);
@@ -134,7 +130,7 @@ public class EventBusConfigurable implements Configurable {
                 }
 
                 @Override
-                public @NlsContexts.DetailedDescription @Nullable String getErrorText(String inputString) {
+                public @Nullable String getErrorText(String inputString) {
                     if (!checkInput(inputString)) {
                         return "EventBus rule string cannot be empty";
                     }

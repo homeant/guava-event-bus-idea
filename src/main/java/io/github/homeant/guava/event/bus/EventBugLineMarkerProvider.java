@@ -46,6 +46,6 @@ public class EventBugLineMarkerProvider implements LineMarkerProvider {
                 icon,
                 e -> title,
                 new EventBusNavigationHandler(goItemProviderHandler),
-                GutterIconRenderer.Alignment.LEFT, () -> title);
+                GutterIconRenderer.Alignment.LEFT);
     }
 }

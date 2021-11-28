@@ -46,7 +46,7 @@ public class EventBusNavigationHandler implements GutterIconNavigationHandler {
             LOG.error(psiElement + " usagesHandler is null");
             return;
         }
-        PsiElement2UsageTargetAdapter[] selfUsageTargets = {new PsiElement2UsageTargetAdapter(psiElement, true)};
+        PsiElement2UsageTargetAdapter[] selfUsageTargets = {new PsiElement2UsageTargetAdapter(psiElement, new FindUsagesOptions(project))};
         AtomicBoolean atomicBoolean = new AtomicBoolean(false);
         PingEDT pingEDT = new PingEDT("", () -> atomicBoolean.get(), 100, () -> {
             if (!atomicBoolean.get()) {
