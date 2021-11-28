@@ -12,7 +12,6 @@ import io.github.homeant.guava.event.bus.utils.PsiUtils;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 public class ListenerProviderHandler implements GoItemProviderHandler {
@@ -78,20 +77,24 @@ public class ListenerProviderHandler implements GoItemProviderHandler {
     public boolean filter(Usage usage) {
         PsiElement element = ((UsageInfo2UsageAdapter) usage).getElement();
         Project project = element.getProject();
-        if(element instanceof PsiJavaCodeReferenceElement){
+        if (element instanceof PsiJavaCodeReferenceElement) {
             PsiMethod psiMethod = PsiTreeUtil.getParentOfType(element, PsiMethod.class);
-            if(psiMethod!=null){
+            if (psiMethod != null) {
                 PsiClass[] sourceMethodParamClass = PsiUtils.findMethodParamClass(psiMethod);
                 for (String listener : setting.getListenerList()) {
-                    if(listener.startsWith("@")){
+                    if (listener.startsWith("@")) {
                         PsiAnnotation annotation = psiMethod.getAnnotation(listener.substring(1));
-                        return annotation!=null;
-                    }else{
+                        if (annotation != null) {
+                            return true;
+                        }
+                    } else {
                         PsiMethod[] methods = PsiUtils.findMethods(listener, project);
                         for (PsiMethod method : methods) {
-                            PsiClass[] targetMethodParamClass = PsiUtils.findMethodParamClass(method);
-                            if(PsiUtils.classEquals(sourceMethodParamClass,targetMethodParamClass)){
-                                return true;
+                            if (PsiUtils.safeEquals(method.getName(), psiMethod.getName())) {
+                                PsiClass[] targetMethodParamClass = PsiUtils.findMethodParamClass(method);
+                                if (PsiUtils.classEquals(sourceMethodParamClass, targetMethodParamClass)) {
+                                    return true;
+                                }
                             }
                         }
                     }
@@ -107,26 +110,7 @@ public class ListenerProviderHandler implements GoItemProviderHandler {
         return usageList.stream().map(usage -> {
             PsiElement element = ((UsageInfo2UsageAdapter) usage).getElement();
             PsiMethod psiMethod = PsiTreeUtil.getParentOfType(element, PsiMethod.class);
-            if(psiMethod!=null) {
-                PsiClass[] sourceMethodParamClass = PsiUtils.findMethodParamClass(psiMethod);
-                for (String listener : setting.getListenerList()) {
-                    if(listener.startsWith("@")){
-                        PsiAnnotation annotation = psiMethod.getAnnotation(listener.substring(1));
-                        if(annotation!=null){
-                            return new GotoRelatedItem(psiMethod);
-                        }
-                    }else{
-                        PsiMethod[] methods = PsiUtils.findMethods(listener, element.getProject());
-                        for (PsiMethod method : methods) {
-                            PsiClass[] targetMethodParamClass = PsiUtils.findMethodParamClass(method);
-                            if(PsiUtils.classEquals(sourceMethodParamClass,targetMethodParamClass)){
-                                return new GotoRelatedItem(psiMethod);
-                            }
-                        }
-                    }
-                }
-            }
-            return null;
-        }).filter(Objects::nonNull).collect(Collectors.toList());
+            return new GotoRelatedItem(psiMethod);
+        }).collect(Collectors.toList());
     }
 }

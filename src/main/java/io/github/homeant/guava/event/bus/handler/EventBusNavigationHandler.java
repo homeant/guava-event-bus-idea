@@ -10,7 +10,6 @@ import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
 import com.intellij.ui.awt.RelativePoint;
 import com.intellij.usages.Usage;
-import com.intellij.usages.UsageInfo2UsageAdapter;
 import com.intellij.usages.UsageViewManager;
 import io.github.homeant.guava.event.bus.actions.PingEDT;
 import org.jetbrains.annotations.NotNull;
@@ -57,13 +56,12 @@ public class EventBusNavigationHandler implements GutterIconNavigationHandler {
         });
         // search
         FindUsagesManager.startProcessUsages(usagesHandler,primaryElements, usagesHandler.getSecondaryElements(), usage -> {
-            System.out.println(usage);
             synchronized (usages) {
-                if (UsageViewManager.isSelfUsage(usage, selfUsageTargets)) {
-                    return false;
-                }
                 if (!this.handler.filter(usage)) {
-                    //return false;
+                    return true;
+                }
+                if (UsageViewManager.isSelfUsage(usage, selfUsageTargets)) {
+                    return true;
                 }
                 usages.add(usage);
                 pingEDT.ping();

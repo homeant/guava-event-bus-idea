@@ -4,17 +4,14 @@ import com.intellij.lang.Language;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.*;
 import com.intellij.psi.impl.source.PsiClassReferenceType;
-import com.intellij.psi.impl.source.tree.java.*;
+import com.intellij.psi.impl.source.tree.java.PsiIdentifierImpl;
+import com.intellij.psi.impl.source.tree.java.PsiMethodCallExpressionImpl;
+import com.intellij.psi.impl.source.tree.java.PsiReferenceExpressionImpl;
 import com.intellij.psi.search.GlobalSearchScope;
-import com.intellij.psi.search.searches.ReferencesSearch;
-import com.intellij.psi.util.PsiTreeUtil;
-import io.github.homeant.guava.event.bus.constant.Constants;
 import lombok.extern.java.Log;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 @Log
 public class PsiUtils {
@@ -159,7 +156,7 @@ public class PsiUtils {
         return false;
     }
 
-    private static boolean safeEquals(String obj, String value) {
+    public static boolean safeEquals(String obj, String value) {
         return obj != null && obj.equals(value);
     }
 }
