@@ -4,15 +4,17 @@ import com.intellij.lang.Language;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.*;
 import com.intellij.psi.impl.source.PsiClassReferenceType;
-import com.intellij.psi.impl.source.tree.java.ExpressionPsiElement;
-import com.intellij.psi.impl.source.tree.java.PsiIdentifierImpl;
-import com.intellij.psi.impl.source.tree.java.PsiMethodCallExpressionImpl;
-import com.intellij.psi.impl.source.tree.java.PsiReferenceExpressionImpl;
+import com.intellij.psi.impl.source.tree.java.*;
 import com.intellij.psi.search.GlobalSearchScope;
+import com.intellij.psi.search.searches.ReferencesSearch;
+import com.intellij.psi.util.PsiTreeUtil;
 import io.github.homeant.guava.event.bus.constant.Constants;
 import lombok.extern.java.Log;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Log
 public class PsiUtils {
@@ -27,7 +29,14 @@ public class PsiUtils {
             for (int i = 0; i < sourceParameterList.getParametersCount(); i++) {
                 PsiClassType sourceType = (PsiClassType) sourceParameterList.getParameter(i).getType();
                 PsiClassType targetType = (PsiClassType) targetParameterList.getParameter(i).getType();
-                if (!safeEquals(sourceType.resolve().getQualifiedName(), targetType.resolve().getQualifiedName())) {
+                String sourceName = sourceType.resolve().getQualifiedName();
+                String targetName = targetType.resolve().getQualifiedName();
+//                if(!"java.lang.Object".equals(targetName) && !"java.lang.Object".equals(sourceName)){
+//                    if (!safeEquals(sourceName,targetName)) {
+//                        return false;
+//                    }
+//                }
+                if (!safeEquals(sourceName, targetName)) {
                     return false;
                 }
             }
@@ -36,17 +45,21 @@ public class PsiUtils {
         return false;
     }
 
-    public static PsiMethod findMethod(PsiMethodCallExpression expression, Project project) {
+    public static PsiClass findClass(String name,Project project) {
+        JavaPsiFacade javaPsiFacade = JavaPsiFacade.getInstance(project);
+        return javaPsiFacade.findClass(name, GlobalSearchScope.allScope(project));
+    }
 
+    public static PsiMethod findMethod(PsiMethodCallExpression expression, Project project) {
         JavaPsiFacade javaPsiFacade = JavaPsiFacade.getInstance(project);
         PsiElement firstChild = expression.getFirstChild().getFirstChild();
         PsiType type = null;
-        if(firstChild instanceof PsiNewExpression) {
+        if (firstChild instanceof PsiNewExpression) {
             type = ((PsiNewExpression) firstChild).getType();
-        }else if(firstChild instanceof PsiReferenceExpression){
-            type = ((PsiReferenceExpressionImpl)firstChild).getType();
+        } else if (firstChild instanceof PsiReferenceExpression) {
+            type = ((PsiReferenceExpressionImpl) firstChild).getType();
         }
-        if(type!=null) {
+        if (type != null) {
             PsiClass eventBusClass = javaPsiFacade.findClass(type.getCanonicalText(), GlobalSearchScope.allScope(project));
             String methodName = expression.getFirstChild().getLastChild().getText();
             PsiMethod[] methods = eventBusClass.findMethodsByName(methodName, false);
@@ -78,36 +91,49 @@ public class PsiUtils {
         return new PsiMethod[]{};
     }
 
-    public static PsiClass[] getMethodParamClass(PsiMethod method) {
-        PsiParameterList parameterList = method.getParameterList();
-        PsiClass[] psiClazz = new PsiClass[parameterList.getParametersCount()];
-        if (!parameterList.isEmpty()) {
-            for (int i = 0; i < parameterList.getParameters().length; i++) {
-                psiClazz[i] = ((PsiClassType) parameterList.getParameter(0).getType()).resolve();
+    public static PsiType[] getMethodParamType(PsiMethodCallExpression elt) {
+        PsiExpressionList expressionList = (PsiExpressionList) elt.getLastChild();
+        return expressionList.getExpressionTypes();
+    }
+
+    public static PsiClass[] getMethodParamClass(PsiElement element) {
+        if (element instanceof PsiMethod) {
+            PsiParameterList parameterList = ((PsiMethod) element).getParameterList();
+            PsiClass[] psiClazz = new PsiClass[parameterList.getParametersCount()];
+            if (!parameterList.isEmpty()) {
+                for (int i = 0; i < parameterList.getParameters().length; i++) {
+                    psiClazz[i] = ((PsiClassType) parameterList.getParameter(i).getType()).resolve();
+                }
+            }
+            return psiClazz;
+        } else if (element instanceof PsiMethodCallExpression) {
+            PsiType[] typeArguments = ((PsiMethodCallExpression) element).getArgumentList().getExpressionTypes();
+            PsiClass[] psiClazz = new PsiClass[typeArguments.length];
+            for (int i = 0; i < typeArguments.length; i++) {
+                psiClazz[i] = ((PsiClassType) typeArguments[i]).resolve();
+            }
+            return psiClazz;
+        }
+        throw new IllegalArgumentException(element.getText() + " not find Parameter");
+    }
+
+    public static boolean classEquals(PsiClass[] sources, PsiClass[] targets) {
+        if (sources.length != targets.length) {
+            return false;
+        }
+        for (int i = 0; i < sources.length; i++) {
+            if (!Objects.equals(sources[i], targets[i])) {
+                return false;
             }
         }
-        return psiClazz;
+        return true;
     }
+
 
     public static boolean isJava(PsiElement element) {
         return element.getLanguage().is(Language.findLanguageByID("JAVA"));
     }
 
-    public static boolean isEventBusPostMethod(PsiElement element) {
-        if (isJava(element) && element instanceof PsiMethodCallExpressionImpl && element.getFirstChild() != null && element.getFirstChild() instanceof PsiReferenceExpressionImpl) {
-            PsiReferenceExpressionImpl all = (PsiReferenceExpressionImpl) element.getFirstChild();
-            if (all.getFirstChild() instanceof PsiReferenceExpression) {
-                PsiReferenceExpression start = (PsiReferenceExpression) all.getFirstChild();
-                PsiIdentifierImpl post = (PsiIdentifierImpl) all.getLastChild();
-                boolean isEventBusClass = start.getType() != null && safeEquals(Constants.EVENT_CLASS_ABS_NAME, start.getType().getCanonicalText());
-                boolean isAsyncEventBusClass = start.getType() != null && safeEquals(Constants.EVENT_ASYNC_CLASS_ABS_NAME, start.getType().getCanonicalText());
-                if (safeEquals(post.getText(), Constants.PUBLISHER_FUNC_NAME) && (isEventBusClass || isAsyncEventBusClass)) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
 
     public static boolean isPublisher(PsiElement element, List<String> publishList) {
         if (!isJava(element)) {
@@ -190,28 +216,7 @@ public class PsiUtils {
         return false;
     }
 
-    public static boolean isEventBusHandlerMethod(PsiElement element) {
-        if (isJava(element) && element instanceof PsiMethod) {
-            PsiMethod method = (PsiMethod) element;
-            PsiModifierList modifierList = method.getModifierList();
-            for (PsiAnnotation psiAnnotation : modifierList.getAnnotations()) {
-                if (safeEquals(psiAnnotation.getQualifiedName(), Constants.LISTENER_ANNOTATION_NAME)) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
     private static boolean safeEquals(String obj, String value) {
         return obj != null && obj.equals(value);
     }
-
-    public static PsiClass getClass(PsiType psiType) {
-        if (psiType instanceof PsiClassType) {
-            return ((PsiClassType) psiType).resolve();
-        }
-        return null;
-    }
-
 }
