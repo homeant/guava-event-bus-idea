@@ -1,6 +1,7 @@
 package io.github.homeant.guava.event.bus.handler;
 
 import com.intellij.codeInsight.navigation.NavigationUtil;
+import com.intellij.find.findUsages.FindUsagesHandlerBase;
 import com.intellij.navigation.GotoRelatedItem;
 import com.intellij.psi.PsiElement;
 import com.intellij.ui.awt.RelativePoint;
@@ -15,9 +16,11 @@ public interface GoItemProviderHandler {
 
     PsiElement getPsiElement();
 
-    List<PsiElement> findElementList(MouseEvent e, PsiElement elt);
+    PsiElement[] getPrimaryElements();
 
-    default boolean isShow(MouseEvent e, Usage usage) {
+    List<PsiElement> findElementList(PsiElement elt);
+
+    default boolean filter(Usage usage) {
         return true;
     }
 

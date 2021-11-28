@@ -6,12 +6,14 @@ import com.intellij.openapi.project.Project;
 import com.intellij.psi.*;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.usages.Usage;
+import com.intellij.usages.UsageInfo2UsageAdapter;
 import io.github.homeant.guava.event.bus.config.EventBusSettings;
 import io.github.homeant.guava.event.bus.utils.PsiUtils;
 
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class ListenerProviderHandler implements GoItemProviderHandler {
 
@@ -35,14 +37,21 @@ public class ListenerProviderHandler implements GoItemProviderHandler {
     @Override
     public PsiElement getPsiElement() {
         if(psiElement instanceof PsiMethodCallExpression) {
-            PsiClass[] methodParamClass = PsiUtils.getMethodParamClass(psiElement);
-            return methodParamClass[0];
+           return PsiUtils.findMethod((PsiMethodCallExpression)psiElement,psiElement.getProject());
         }
-        return psiElement;
+        return null;
     }
 
     @Override
-    public List<PsiElement> findElementList(MouseEvent e, PsiElement elt) {
+    public PsiElement[] getPrimaryElements() {
+        if (psiElement instanceof PsiMethodCallExpression) {
+            return PsiUtils.getMethodParamClass(psiElement);
+        }
+        return PsiElement.EMPTY_ARRAY;
+    }
+
+    @Override
+    public List<PsiElement> findElementList(PsiElement elt) {
         List<PsiElement> eltList = new ArrayList<>();
         Project project = elt.getProject();
         if (elt instanceof PsiMethodCallExpression) {
@@ -50,12 +59,12 @@ public class ListenerProviderHandler implements GoItemProviderHandler {
                 if (listener.startsWith("@")) {
                     PsiClass annotationClass = PsiUtils.findClass(listener.substring(1), project);
                     if (annotationClass != null) {
-                        //eltList.add(annotationClass);
+                        eltList.add(annotationClass);
                     }
                 } else {
                     PsiMethod[] methods = PsiUtils.findMethods(listener, project);
                     for (PsiMethod method : methods) {
-                        if(!eltList.contains(method)) {
+                        if (!eltList.contains(method)) {
                             eltList.add(method);
                         }
                     }
@@ -63,50 +72,42 @@ public class ListenerProviderHandler implements GoItemProviderHandler {
             }
         }
         return eltList;
-
-
-//        List<GotoRelatedItem> gotoList = new ArrayList<>();
-//        Project project = elt.getProject();
-//        if (elt instanceof PsiMethodCallExpression) {
-//            PsiMethodCallExpression expression = (PsiMethodCallExpression) elt;
-//            PsiMethod sourceMethod = PsiUtils.findMethod(expression, project);
-//            if (sourceMethod != null) {
-//                for (String pattern : setting.getListenerList()) {
-//                    // 注解
-//                    if (pattern.startsWith("@")) {
-//                        PsiType[] methodParamType = PsiUtils.getMethodParamType(expression);
-//                        Query<PsiReference> search = ReferencesSearch.search(sourceMethod);
-//                        Collection<PsiReference> refList = search.findAll();
-//                        refList.forEach(ref -> {
-//                            LOG.info("ref type:" + ref.toString());
-//                            if (ref instanceof PsiReferenceExpression) {
-//                                PsiElement parent = ((PsiReferenceExpression) ref).getParent().getParent();
-//                                LOG.info("parent:" + parent.getText());
-//                                PsiMethod method2 = PsiTreeUtil.getParentOfType(ref.getElement(), PsiMethod.class);
-//                                PsiAnnotation annotation = method2.getAnnotation(pattern.substring(1));
-//                                if (annotation != null) {
-//                                    gotoList.add(new GotoRelatedItem(method2, "JAVA"));
-//                                }
-//                            }
-//                        });
-//                    } else {
-//                        PsiMethod[] methods = PsiUtils.findMethods(pattern, project);
-//                        for (PsiMethod method : methods) {
-//                            if (PsiUtils.methodParamEquals(method, sourceMethod)) {
-//                                gotoList.add(new GotoRelatedItem(method, "JAVA"));
-//                            }
-//                        }
-//                    }
-//                }
-//            }
-//        }
-//        //return gotoList;
     }
 
+    @Override
+    public boolean filter(Usage usage) {
+        PsiElement element = ((UsageInfo2UsageAdapter) usage).getElement();
+        Project project = element.getProject();
+        if(element instanceof PsiJavaCodeReferenceElement){
+            PsiMethod psiMethod = PsiTreeUtil.getParentOfType(element, PsiMethod.class);
+            if(psiMethod!=null){
+                PsiClass[] sourceMethodParamClass = PsiUtils.getMethodParamClass(psiMethod);
+                for (String listener : setting.getListenerList()) {
+                    if(listener.startsWith("@")){
+                        PsiAnnotation annotation = psiMethod.getAnnotation(listener.substring(1));
+                        return annotation!=null;
+                    }else{
+                        PsiMethod[] methods = PsiUtils.findMethods(listener, project);
+                        for (PsiMethod method : methods) {
+                            PsiClass[] targetMethodParamClass = PsiUtils.getMethodParamClass(method);
+                            if(PsiUtils.classEquals(sourceMethodParamClass,targetMethodParamClass)){
+                                return true;
+                            }
+                        }
+                    }
+                }
+            }
+            return false;
+        }
+        return false;
+    }
 
     @Override
     public List<GotoRelatedItem> conversion(List<Usage> usageList) {
-        List<GotoRelatedItem> gotoList = new ArrayList<>();
-        return gotoList;
+        return usageList.stream().map(usage -> {
+            PsiElement element = ((UsageInfo2UsageAdapter) usage).getElement();
+            PsiMethod psiMethod = PsiTreeUtil.getParentOfType(element, PsiMethod.class);
+            return new GotoRelatedItem(psiMethod);
+        }).collect(Collectors.toList());
     }
 }

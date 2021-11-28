@@ -1,5 +1,11 @@
 package io.github.homeant.guava.event.bus.handler;
 
+import com.intellij.find.FindManager;
+import com.intellij.find.findUsages.FindUsagesHandler;
+import com.intellij.find.findUsages.FindUsagesHandlerBase;
+import com.intellij.find.findUsages.FindUsagesManager;
+import com.intellij.find.findUsages.JavaFindUsagesHandler;
+import com.intellij.find.impl.FindManagerImpl;
 import com.intellij.navigation.GotoRelatedItem;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
@@ -39,7 +45,21 @@ public class PublisherProviderHandler implements GoItemProviderHandler {
     }
 
     @Override
-    public List<PsiElement> findElementList(MouseEvent e, PsiElement elt) {
+    public PsiElement[] getPrimaryElements() {
+        List<PsiElement> list = new ArrayList<>();
+        if (psiElement instanceof PsiMethod) {
+            Project project = psiElement.getProject();
+            for (String publish : setting.getPublisherList()) {
+                for (PsiMethod psiMethod : PsiUtils.findMethods(publish, project)) {
+                    list.add(psiMethod);
+                }
+            }
+        }
+        return list.toArray(new PsiElement[]{});
+    }
+
+    @Override
+    public List<PsiElement> findElementList(PsiElement elt) {
         List<PsiElement> list = new ArrayList<>();
         if (elt instanceof PsiIdentifier) {
             elt = PsiTreeUtil.getParentOfType(elt, PsiMethod.class);
@@ -75,9 +95,6 @@ public class PublisherProviderHandler implements GoItemProviderHandler {
         }
         return gotoList;
     }
-
-
-
 
 
 }

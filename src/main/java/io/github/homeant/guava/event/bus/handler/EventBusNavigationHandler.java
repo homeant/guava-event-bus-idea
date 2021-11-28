@@ -2,10 +2,7 @@ package io.github.homeant.guava.event.bus.handler;
 
 import com.intellij.codeInsight.daemon.GutterIconNavigationHandler;
 import com.intellij.find.FindManager;
-import com.intellij.find.findUsages.FindUsagesHandler;
-import com.intellij.find.findUsages.FindUsagesManager;
-import com.intellij.find.findUsages.FindUsagesOptions;
-import com.intellij.find.findUsages.PsiElement2UsageTargetAdapter;
+import com.intellij.find.findUsages.*;
 import com.intellij.find.impl.FindManagerImpl;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
@@ -13,6 +10,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
 import com.intellij.ui.awt.RelativePoint;
 import com.intellij.usages.Usage;
+import com.intellij.usages.UsageInfo2UsageAdapter;
 import com.intellij.usages.UsageViewManager;
 import io.github.homeant.guava.event.bus.actions.PingEDT;
 import org.jetbrains.annotations.NotNull;
@@ -36,13 +34,14 @@ public class EventBusNavigationHandler implements GutterIconNavigationHandler {
     public void navigate(MouseEvent e, PsiElement elt) {
         Project project = elt.getProject();
         PsiElement psiElement = handler.getPsiElement();
+        PsiElement[] primaryElements = handler.getPrimaryElements();
         final List<Usage> usages = new ArrayList<>();
         // 查找关系
         FindManagerImpl findManager = (FindManagerImpl) FindManager.getInstance(project);
         FindUsagesManager findUsagesManager = findManager.getFindUsagesManager();
-        FindUsagesHandler usagesHandler = findUsagesManager.getFindUsagesHandler(psiElement, true);
-        if(usagesHandler==null){
-            LOG.error(psiElement+" usagesHandler is null");
+        JavaFindUsagesHandler usagesHandler = (JavaFindUsagesHandler)findUsagesManager.getFindUsagesHandler(psiElement, true);
+        if (usagesHandler == null) {
+            LOG.error(psiElement + " usagesHandler is null");
             return;
         }
         PsiElement2UsageTargetAdapter[] selfUsageTargets = {new PsiElement2UsageTargetAdapter(psiElement, true)};
@@ -54,15 +53,13 @@ public class EventBusNavigationHandler implements GutterIconNavigationHandler {
 
         });
         // search
-        PsiElement[] originalPrimaryElements = usagesHandler.getPrimaryElements();
-        PsiElement[] primaryElements = handler.findElementList(e, elt).toArray(new PsiElement[]{});
-        FindUsagesManager.startProcessUsages(usagesHandler,primaryElements, usagesHandler.getSecondaryElements(), usage -> {
+        FindUsagesManager.startProcessUsages(usagesHandler, primaryElements, usagesHandler.getSecondaryElements(), usage -> {
             System.out.println(usage);
             synchronized (usages) {
                 if (UsageViewManager.isSelfUsage(usage, selfUsageTargets)) {
                     return false;
                 }
-                if (!this.handler.isShow(e, usage)) {
+                if (!this.handler.filter(usage)) {
                     return false;
                 }
                 usages.add(usage);
