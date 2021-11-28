@@ -10,9 +10,9 @@ import com.intellij.usages.UsageInfo2UsageAdapter;
 import io.github.homeant.guava.event.bus.config.EventBusSettings;
 import io.github.homeant.guava.event.bus.utils.PsiUtils;
 
-import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 public class ListenerProviderHandler implements GoItemProviderHandler {
@@ -36,8 +36,8 @@ public class ListenerProviderHandler implements GoItemProviderHandler {
 
     @Override
     public PsiElement getPsiElement() {
-        if(psiElement instanceof PsiMethodCallExpression) {
-           return PsiUtils.findMethod((PsiMethodCallExpression)psiElement,psiElement.getProject());
+        if (psiElement instanceof PsiMethodCallExpression) {
+            return PsiUtils.findMethodParamClass(psiElement)[0];
         }
         return null;
     }
@@ -45,7 +45,7 @@ public class ListenerProviderHandler implements GoItemProviderHandler {
     @Override
     public PsiElement[] getPrimaryElements() {
         if (psiElement instanceof PsiMethodCallExpression) {
-            return PsiUtils.getMethodParamClass(psiElement);
+            return PsiUtils.findMethodParamClass(psiElement);
         }
         return PsiElement.EMPTY_ARRAY;
     }
@@ -81,7 +81,7 @@ public class ListenerProviderHandler implements GoItemProviderHandler {
         if(element instanceof PsiJavaCodeReferenceElement){
             PsiMethod psiMethod = PsiTreeUtil.getParentOfType(element, PsiMethod.class);
             if(psiMethod!=null){
-                PsiClass[] sourceMethodParamClass = PsiUtils.getMethodParamClass(psiMethod);
+                PsiClass[] sourceMethodParamClass = PsiUtils.findMethodParamClass(psiMethod);
                 for (String listener : setting.getListenerList()) {
                     if(listener.startsWith("@")){
                         PsiAnnotation annotation = psiMethod.getAnnotation(listener.substring(1));
@@ -89,7 +89,7 @@ public class ListenerProviderHandler implements GoItemProviderHandler {
                     }else{
                         PsiMethod[] methods = PsiUtils.findMethods(listener, project);
                         for (PsiMethod method : methods) {
-                            PsiClass[] targetMethodParamClass = PsiUtils.getMethodParamClass(method);
+                            PsiClass[] targetMethodParamClass = PsiUtils.findMethodParamClass(method);
                             if(PsiUtils.classEquals(sourceMethodParamClass,targetMethodParamClass)){
                                 return true;
                             }
@@ -107,7 +107,26 @@ public class ListenerProviderHandler implements GoItemProviderHandler {
         return usageList.stream().map(usage -> {
             PsiElement element = ((UsageInfo2UsageAdapter) usage).getElement();
             PsiMethod psiMethod = PsiTreeUtil.getParentOfType(element, PsiMethod.class);
-            return new GotoRelatedItem(psiMethod);
-        }).collect(Collectors.toList());
+            if(psiMethod!=null) {
+                PsiClass[] sourceMethodParamClass = PsiUtils.findMethodParamClass(psiMethod);
+                for (String listener : setting.getListenerList()) {
+                    if(listener.startsWith("@")){
+                        PsiAnnotation annotation = psiMethod.getAnnotation(listener.substring(1));
+                        if(annotation!=null){
+                            return new GotoRelatedItem(psiMethod);
+                        }
+                    }else{
+                        PsiMethod[] methods = PsiUtils.findMethods(listener, element.getProject());
+                        for (PsiMethod method : methods) {
+                            PsiClass[] targetMethodParamClass = PsiUtils.findMethodParamClass(method);
+                            if(PsiUtils.classEquals(sourceMethodParamClass,targetMethodParamClass)){
+                                return new GotoRelatedItem(psiMethod);
+                            }
+                        }
+                    }
+                }
+            }
+            return null;
+        }).filter(Objects::nonNull).collect(Collectors.toList());
     }
 }

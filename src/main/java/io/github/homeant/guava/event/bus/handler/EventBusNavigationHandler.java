@@ -34,6 +34,9 @@ public class EventBusNavigationHandler implements GutterIconNavigationHandler {
     public void navigate(MouseEvent e, PsiElement elt) {
         Project project = elt.getProject();
         PsiElement psiElement = handler.getPsiElement();
+        if(psiElement==null){
+            return;
+        }
         PsiElement[] primaryElements = handler.getPrimaryElements();
         final List<Usage> usages = new ArrayList<>();
         // 查找关系
@@ -53,14 +56,14 @@ public class EventBusNavigationHandler implements GutterIconNavigationHandler {
 
         });
         // search
-        FindUsagesManager.startProcessUsages(usagesHandler, primaryElements, usagesHandler.getSecondaryElements(), usage -> {
+        FindUsagesManager.startProcessUsages(usagesHandler,primaryElements, usagesHandler.getSecondaryElements(), usage -> {
             System.out.println(usage);
             synchronized (usages) {
                 if (UsageViewManager.isSelfUsage(usage, selfUsageTargets)) {
                     return false;
                 }
                 if (!this.handler.filter(usage)) {
-                    return false;
+                    //return false;
                 }
                 usages.add(usage);
                 pingEDT.ping();

@@ -1,11 +1,5 @@
 package io.github.homeant.guava.event.bus.handler;
 
-import com.intellij.find.FindManager;
-import com.intellij.find.findUsages.FindUsagesHandler;
-import com.intellij.find.findUsages.FindUsagesHandlerBase;
-import com.intellij.find.findUsages.FindUsagesManager;
-import com.intellij.find.findUsages.JavaFindUsagesHandler;
-import com.intellij.find.impl.FindManagerImpl;
 import com.intellij.navigation.GotoRelatedItem;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
@@ -16,7 +10,6 @@ import com.intellij.usages.UsageInfo2UsageAdapter;
 import io.github.homeant.guava.event.bus.config.EventBusSettings;
 import io.github.homeant.guava.event.bus.utils.PsiUtils;
 
-import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -84,8 +77,8 @@ public class PublisherProviderHandler implements GoItemProviderHandler {
                 if (element instanceof PsiJavaCodeReferenceElement) {
                     PsiMethodCallExpression methodCallExpression = PsiTreeUtil.getParentOfType(element, PsiMethodCallExpression.class);
                     if (methodCallExpression != null) {
-                        PsiClass[] targetParamClass = PsiUtils.getMethodParamClass(methodCallExpression);
-                        PsiClass[] sourceParamClass = PsiUtils.getMethodParamClass(psiElement);
+                        PsiClass[] targetParamClass = PsiUtils.findMethodParamClass(methodCallExpression);
+                        PsiClass[] sourceParamClass = PsiUtils.findMethodParamClass(psiElement);
                         if (PsiUtils.classEquals(targetParamClass, sourceParamClass)) {
                             gotoList.add(new GotoRelatedItem(element));
                         }
