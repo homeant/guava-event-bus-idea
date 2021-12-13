@@ -19,7 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class EventBusNavigationHandler implements GutterIconNavigationHandler {
+public class EventBusNavigationHandler implements GutterIconNavigationHandler<PsiElement> {
 
     private static final Logger LOG = Logger.getInstance(EventBusNavigationHandler.class);
 
@@ -33,7 +33,7 @@ public class EventBusNavigationHandler implements GutterIconNavigationHandler {
     public void navigate(MouseEvent e, PsiElement elt) {
         Project project = elt.getProject();
         PsiElement psiElement = handler.getPsiElement();
-        if(psiElement==null){
+        if (psiElement == null) {
             return;
         }
         PsiElement[] primaryElements = handler.getPrimaryElements();
@@ -41,21 +41,19 @@ public class EventBusNavigationHandler implements GutterIconNavigationHandler {
         // 查找关系
         FindManagerImpl findManager = (FindManagerImpl) FindManager.getInstance(project);
         FindUsagesManager findUsagesManager = findManager.getFindUsagesManager();
-        JavaFindUsagesHandler usagesHandler = (JavaFindUsagesHandler)findUsagesManager.getFindUsagesHandler(psiElement, true);
+        JavaFindUsagesHandler usagesHandler = (JavaFindUsagesHandler) findUsagesManager.getFindUsagesHandler(psiElement, true);
         if (usagesHandler == null) {
             LOG.error(psiElement + " usagesHandler is null");
             return;
         }
         PsiElement2UsageTargetAdapter[] selfUsageTargets = {new PsiElement2UsageTargetAdapter(psiElement, new FindUsagesOptions(project))};
         AtomicBoolean atomicBoolean = new AtomicBoolean(false);
-        PingEDT pingEDT = new PingEDT("", () -> atomicBoolean.get(), 100, () -> {
-            if (!atomicBoolean.get()) {
-                return;
-            }
+        PingEDT pingEDT = new PingEDT("", atomicBoolean::get, 100, () -> {
+
 
         });
         // search
-        FindUsagesManager.startProcessUsages(usagesHandler,primaryElements, usagesHandler.getSecondaryElements(), usage -> {
+        FindUsagesManager.startProcessUsages(usagesHandler, primaryElements, usagesHandler.getSecondaryElements(), usage -> {
             synchronized (usages) {
                 if (!this.handler.filter(usage)) {
                     return true;
