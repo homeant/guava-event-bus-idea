@@ -27,14 +27,16 @@ public class EventBugLineMarkerProvider implements LineMarkerProvider {
         Project project = element.getProject();
         EventBusSettings settings = EventBusSettings.getInstance(project);
         EventBusSettings.Setting setting = settings.getState();
-        // publisher
-        if (PsiUtils.isPublisher(element, setting.getPublisherList())) {
-            return createLineMarkerInfo(element, Constants.PUBLISHER_ICON, EventBusBundle.message("guava.event.bus.publisher.title"), new ListenerProviderHandler(setting, element));
-        }
-        // listener
-        if (PsiUtils.isListener(element, setting.getListenerList())) {
-            PsiMethod method = (PsiMethod) element;
-            return createLineMarkerInfo(method.getIdentifyingElement(), Constants.LISTENER_ICON, EventBusBundle.message("guava.event.bus.listener.title"), new PublisherProviderHandler(setting, element));
+        if (setting != null) {
+            // publisher
+            if (PsiUtils.isPublisher(element, setting.getPublisherList())) {
+                return createLineMarkerInfo(element, Constants.PUBLISHER_ICON, EventBusBundle.message("guava.event.bus.publisher.title"), new ListenerProviderHandler(setting, element));
+            }
+            // listener
+            if (PsiUtils.isListener(element, setting.getListenerList())) {
+                PsiMethod method = (PsiMethod) element;
+                return createLineMarkerInfo(method.getIdentifyingElement(), Constants.LISTENER_ICON, EventBusBundle.message("guava.event.bus.listener.title"), new PublisherProviderHandler(setting, element));
+            }
         }
         return null;
     }
