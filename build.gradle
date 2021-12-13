@@ -51,8 +51,8 @@ tasks{
     patchPluginXml{
         pluginName = project.findProperty('pluginName').toString()
         changeNotes = changelog.getUnreleased().toHTML()
-        pluginSinceBuild = project.findProperty('pluginSinceBuild').toString()
-        pluginUntilBuild = project.findProperty('pluginUntilBuild').toString()
+        sinceBuild = project.findProperty('pluginSinceBuild').toString()
+        untilBuild = project.findProperty('pluginUntilBuild').toString()
     }
     publishPlugin {
         token = System.getenv("ORG_GRADLE_PROJECT_intellijPublishToken")
