@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 ### Added
+- version upgrade
+
+### [2.0]
 - add a custom configuration and automatically adapt according to the configuration.
 
 ## [1.0.0]
