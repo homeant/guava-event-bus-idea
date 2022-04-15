@@ -9,6 +9,8 @@ on:
 jobs:
     build:
         runs-on: ubuntu-latest
+        environment:
+            name: ci_env
         steps:
 #            -   uses: actions/checkout@v3
 #            -   name: Set up JDK 11
