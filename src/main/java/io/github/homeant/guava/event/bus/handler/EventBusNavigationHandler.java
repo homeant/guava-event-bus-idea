@@ -19,7 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class EventBusNavigationHandler implements GutterIconNavigationHandler {
+public class EventBusNavigationHandler implements GutterIconNavigationHandler<PsiElement> {
 
     private static final Logger LOG = Logger.getInstance(EventBusNavigationHandler.class);
 
@@ -48,10 +48,7 @@ public class EventBusNavigationHandler implements GutterIconNavigationHandler {
         }
         PsiElement2UsageTargetAdapter[] selfUsageTargets = {new PsiElement2UsageTargetAdapter(psiElement, true)};
         AtomicBoolean atomicBoolean = new AtomicBoolean(false);
-        PingEDT pingEDT = new PingEDT("", () -> atomicBoolean.get(), 100, () -> {
-            if (!atomicBoolean.get()) {
-                return;
-            }
+        PingEDT pingEDT = new PingEDT("", atomicBoolean::get, 100, () -> {
 
         });
         // search
