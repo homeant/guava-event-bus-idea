@@ -40,7 +40,10 @@ public class PsiUtils {
             PsiClass[] psiClazz = new PsiClass[parameterList.getParametersCount()];
             if (!parameterList.isEmpty()) {
                 for (int i = 0; i < parameterList.getParameters().length; i++) {
-                    psiClazz[i] = ((PsiClassType) parameterList.getParameter(i).getType()).resolve();
+                    PsiType type = parameterList.getParameter(i).getType();
+                    if(type instanceof PsiClassType){
+                        psiClazz[i] = ((PsiClassType) type).resolve();
+                    }
                 }
             }
             return psiClazz;
