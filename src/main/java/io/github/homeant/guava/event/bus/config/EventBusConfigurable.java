@@ -11,6 +11,7 @@ import com.intellij.openapi.util.NlsContexts;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.ui.AddEditDeleteListPanel;
 import com.intellij.ui.ListSpeedSearch;
+import com.intellij.ui.TreeUIHelper;
 import lombok.extern.java.Log;
 import org.jetbrains.annotations.Nullable;
 
@@ -114,6 +115,7 @@ public class EventBusConfigurable implements Configurable {
             super(title, new ArrayList<>());
             this.message = message;
             new ListSpeedSearch<>(myList);
+            TreeUIHelper.getInstance().installListSpeedSearch(myList);
         }
 
         @Override
